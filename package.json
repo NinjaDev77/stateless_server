@@ -1,0 +1,22 @@
+{
+  "name": "stateless-server-app",
+  "version": "1.0.0",
+  "description": "A web-based application so that its users can submit specific data unique to their current and previous patners/spouses",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app/app.js"
+  },
+  "author": "Jon Vaughn",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.117.0",
+    "body-parser": "^1.18.1",
+    "dynamodb": "^1.0.0",
+    "express": "^4.15.4",
+    "joi": "^11.0.1",
+    "jsonwebtoken": "^8.0.1",
+    "moment": "^2.18.1",
+    "morgan": "^1.8.2",
+    "uuid": "^3.1.0"
+  }
+}

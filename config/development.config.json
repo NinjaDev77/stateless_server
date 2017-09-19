@@ -1,0 +1,7 @@
+{
+  "port" :4000,
+  "dynamodb-config":{
+    "endpoint":""
+  }
+
+}
