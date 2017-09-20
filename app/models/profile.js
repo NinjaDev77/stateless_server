@@ -3,20 +3,20 @@ var profile = {
     TableName: 'profile',
     AttributeDefinitions: [
         {
-            AttributeName: 'Id',
+            AttributeName: 'phoneNumber',
             AttributeType: 'S',
         }
     ],
     KeySchema: [
         {
-            AttributeName: 'Id',
+            AttributeName: 'phoneNumber',
             KeyType: 'HASH',
         },
 
   ],
     ProvisionedThroughput: {
-        ReadCapacityUnits: 1,
-        WriteCapacityUnits: 1,
+        ReadCapacityUnits: 5,
+        WriteCapacityUnits: 5,
     },
     };
 

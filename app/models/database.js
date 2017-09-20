@@ -30,5 +30,21 @@ module.exports=function(){
     // appointments.createTableAppointments(Client);
     // dateTimeVisitProperty.createTableDTVisitProperty(Client);
 
+    var listAllTable    =function(){
+      Client.listTables({}, function(err, data) {
+          if (err) console.log(err); // an error occurred
+          else console.error(data); // successful response
+      });
+    };
+
+    var deleteTable =function(table){
+      Client.deleteTable({TableName :table}, function(err, data) {
+          if (err) ppJson(err); // an error occurred
+          else ppJson(data); // successful response
+      });
+    };
+
+
+
 
 }

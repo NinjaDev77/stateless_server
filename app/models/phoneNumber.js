@@ -3,20 +3,21 @@ var phoneNumber = {
     TableName: 'phoneNumber',
     KeySchema: [
         {
-            AttributeName: 'Id',
+            AttributeName: 'phoneNumber',
             KeyType: 'HASH',
+
         },
 
     ],
     AttributeDefinitions: [
         {
-            AttributeName: 'Id',
+            AttributeName: 'phoneNumber',
             AttributeType: 'S',
         }
     ],
     ProvisionedThroughput: {
-        ReadCapacityUnits: 1,
-        WriteCapacityUnits: 1,
+        ReadCapacityUnits: 5,
+        WriteCapacityUnits: 5,
     },
     };
 

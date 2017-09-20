@@ -12,6 +12,10 @@ var phoneNumberCtrl = require('../controllers/phoneNumberController');
     });
     // Endpoints for phone number
     router.post('/number',phoneNumberCtrl.createPhoneNumber);
+    router.get('/number',phoneNumberCtrl.getAllPhoneNumbers);
+    router.get('/number/:phoneNumber',phoneNumberCtrl.getPhoneNumber);
+    router.delete('/number/:phoneNumber',phoneNumberCtrl.deletePhoneNumber);
+    router.put('/number/:phoneNumber',phoneNumberCtrl.updatePhoneNumber);
 
 
     // Endpoints for profile
