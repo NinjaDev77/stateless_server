@@ -8,7 +8,7 @@ var express     = require('express'),
 
 
 
-var config      = require('../config/development.config'),
+var config      = require('./config/config'),
     apiRoutes   = require('./router/app.router'),
     db          = require('./models/database');
 
@@ -18,7 +18,7 @@ var config      = require('../config/development.config'),
     var app     = express();
     var Router  = express.Router();
 
-    //var AWS= require('aws-sdk'),
+    // db call to create all the tables
     db();
 
     // middleware
@@ -27,10 +27,8 @@ var config      = require('../config/development.config'),
     app.use('/v1',apiRoutes(Router));
 
 
-    // connectin to the dynamo
-    //var dynamodb = new AWS.DynamoDB(config.dynamodb-config);
-    
-    var port = config.port || 3000 ;
+    var port = config.dev.port || 3000 ;
+
     // server listening
     app.listen(port,function(){
       console.log("Application is running on port " + port);

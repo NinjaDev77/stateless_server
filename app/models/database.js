@@ -1,36 +1,34 @@
-var AWS         = require('aws-sdk'),
-    dynamodb    = AWS.DynamoDB;
+var AWS                   = require('aws-sdk')
 
-
-
-
-
-var profile               = require('./profile'),
+var config                = require('../config/config'),
+    profile               = require('./profile'),
     phoneNumber           = require('./phoneNumber'),
     property              = require('./property'),
     messages              = require('./messages'),
     appointments          = require('./appointments'),
     dateTimeVisitProperty = require('./dateTimeVisitProperty');
 
-
+var dynamodb              = AWS.DynamoDB;
 
 module.exports=function(){
-  var dyn= new AWS.DynamoDB({ endpoint: new AWS.Endpoint('http://localhost:8000'),region:"test" ,accessKeyId:"abcd" ,secretAccessKey:"abcd"});
+  if (config.enviroment === 'dev') {
+    var Client= new AWS.DynamoDB({
+                                endpoint:config.dev.endpoint,
+                                region:config.dev.region,
+                                accessKeyId:config.dev.accessKeyId,
+                                secretAccessKey:config.dev.secretAccessKey
+                              });
 
-    // create all the tables
+  };
+    /**
+    * Create Table In The Database Or Check Whether It's Alive
+    *
+    */
+     phoneNumber.createTablePhoneNumber(Client);
+    // property.createTableProperty(Client);
+    // messages.createTableMessage(Client);
+    // appointments.createTableAppointments(Client);
+    // dateTimeVisitProperty.createTableDTVisitProperty(Client);
 
-        // dyn.deleteTable({TableName: 'property'}, function(err, data) {
-        //     if (err) console.log(err); // an error occurred
-        //     else console.log(JSON.stringify(data)); // successful response
-        // });
-    // profile.createTableProfile(dyn);
-     phoneNumber.createTablePhoneNumber(dyn);
-    // property.createTableProperty(dyn);
-    // messages.createTableMessage(dyn);
-    // appointments.createTableAppointments(dyn);
-    // dateTimeVisitProperty.createTableDTVisitProperty(dyn);
-    //return dyn
-    // var date = moment();
-    // console.log(date.toISOString())
 
 }

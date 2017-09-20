@@ -1,0 +1,18 @@
+{
+  "dev":{
+    "endpoint":"http://localhost:8000",
+    "region":"test" ,
+    "accessKeyId":"abcd" ,
+    "secretAccessKey":"abcd",
+    "port"           :4000
+  },
+  "prod":{
+    "endpoint":"",
+    "region":"",
+    "accessKeyId":"",
+    "secretAccessKey":"",
+    "port":""
+  },
+  "enviroment" : "dev"
+
+}

@@ -1,18 +1,21 @@
 var moment    = require('moment');
 var uuid      = require('uuid/v4');
-var AWS       = require("aws-sdk");
-    AWS.config.update({
-                        endpoint: "http://localhost:8000",
-                        region:"test" ,
-                        accessKeyId:"abcd" ,
-                        secretAccessKey:"abcd"
-                      });
-
-var Client    = new AWS.DynamoDB.DocumentClient();
-
+var AWS       = require("aws-sdk")
+var config    = require('../config/config');
 var date      = moment();
 var dateInIso = date.toISOString();
 
+if (config.enviroment==='dev') {
+  AWS.config.update({
+                      endpoint: config.dev.endpoint,
+                      region:config.dev.region ,
+                      accessKeyId:config.dev.accessKeyId,
+                      secretAccessKey:config.dev.secretAccessKey
+                    });
+  var Client = new AWS.DynamoDB.DocumentClient();
+} else {
+
+}
 
 module.exports.createPhoneNumber=function(req,res){
   var body = req.body

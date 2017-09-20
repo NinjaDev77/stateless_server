@@ -1,13 +1,15 @@
-var AWS       = require("aws-sdk");
-    AWS.config.update({
-                        endpoint: "http://localhost:8000",
-                        region:"test" ,
-                        accessKeyId:"abcd" ,
-                        secretAccessKey:"abcd"
-                      });
+var config    = require('../config/config')
+var AWS       = require("aws-sdk")
 
-var docClient = new AWS.DynamoDB.DocumentClient();
-
+if (config.enviroment==='dev') {
+  AWS.config.update({
+                      endpoint: config.dev.endpoint,
+                      region:config.dev.region ,
+                      accessKeyId:config.dev.accessKeyId,
+                      secretAccessKey:config.dev.secretAccessKey
+                    });
+  var Client = new AWS.DynamoDB.DocumentClient();
+}
 // CRUD On profile
 
 module.exports.createProfile=function(req,res){
@@ -36,7 +38,7 @@ module.exports.createProfile=function(req,res){
                     ReturnItemCollectionMetrics: 'NONE', // optional (NONE | SIZE)
   };
   //method to put into the dynamodb
-  docClient.put(params, function(err, data) {
+  Client.put(params, function(err, data) {
       if (err) {
 
           console.error(err); // an error occurred
@@ -59,7 +61,7 @@ module.exports.getProfile=function(req,res){
                             "phoneNumber":phoneNumber
                         }
   }
-  docClient.get(params, function(err, data) {
+  Client.get(params, function(err, data) {
       if (err) {
 
           console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
@@ -85,7 +87,7 @@ module.exports.deleteProfile=function(req,res) {
                           "phoneNumber":phoneNumber
                       }
   }
-  docClient.delete(params, function(err, data) {
+  Client.delete(params, function(err, data) {
     if (err) {
 
         console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
