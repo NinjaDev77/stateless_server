@@ -1,8 +1,9 @@
+var jwt             = require('jsonwebtoken');
 var Token           = require('../framework/jwt.auth');
 var profileCtrl     = require('../controllers/profileController');
 var phoneNumberCtrl = require('../controllers/phoneNumberController');
 
-  // Endpoints of the application
+  // Endpoints of the whole application
   module.exports = function(router) {
 
     router.get('/authenticate',function(req,res){
@@ -10,6 +11,7 @@ var phoneNumberCtrl = require('../controllers/phoneNumberController');
       var token       = userToken.createToken();
       res.status(200).json({status :"OK", token:token});
     });
+    
     // Endpoints for phone number
     router.post('/number',phoneNumberCtrl.createPhoneNumber);
     router.get('/number',phoneNumberCtrl.getAllPhoneNumbers);
@@ -19,9 +21,9 @@ var phoneNumberCtrl = require('../controllers/phoneNumberController');
 
 
     // Endpoints for profile
-    router.post('/profile/:phoneNumber',isAuthticated,profileCtrl.createProfile);
+    router.post('/profile/:phoneNumber',profileCtrl.createProfile);
     router.get('/profile/:phoneNumber',isAuthticated,profileCtrl.getProfile);
-    router.delete('/profile/:phoneNumber',isAuthticated,profileCtrl.deleteProfile);
+    router.delete('/profile/:phoneNumber',profileCtrl.deleteProfile);
 
     return router;
   }
@@ -29,7 +31,7 @@ var phoneNumberCtrl = require('../controllers/phoneNumberController');
   // function to  check authenticate
   function isAuthticated (req,res,next){
     // check header or url parameters or post parameters for token
-  var token = req.body.token || req.query.token || req.headers['x-access-token'];
+  var token = req.body.token || req.query.token || req.headers['x-access-token'] || req.headers.token;
 
     // decode token
   if (token) {
@@ -37,6 +39,7 @@ var phoneNumberCtrl = require('../controllers/phoneNumberController');
     // verifies secret and checks exp
     jwt.verify(token, 'test', function(err, decoded) {
       if (err) {
+        console.log(err);
         return res.status(403).json({ code:403, message: 'unauthorized' });
       } else {
         // if everything is good, save to request for use in other routes

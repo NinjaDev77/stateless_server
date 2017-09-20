@@ -4,17 +4,22 @@ var AWS       = require("aws-sdk")
 var config    = require('../config/config');
 
 
-
+// check enviroment is developemet or not
 if (config.enviroment==='dev') {
+
   new AWS.DynamoDB({
                       endpoint: config.dev.endpoint,
                       region:config.dev.region ,
                       accessKeyId:config.dev.accessKeyId,
                       secretAccessKey:config.dev.secretAccessKey
-                    });
+  });
+
+  // connection to the DynamoDB
   var Client = new AWS.DynamoDB.DocumentClient();
+  
 };
 
+// function to create phone number
 module.exports.createPhoneNumber=function(req,res){
   var body = req.body
 
@@ -54,6 +59,7 @@ module.exports.createPhoneNumber=function(req,res){
 
 };
 
+// function to get all phone numbers
 module.exports.getAllPhoneNumbers =function(req,res){
   var params        = {
                         TableName: "phoneNumber",
@@ -77,7 +83,7 @@ module.exports.getAllPhoneNumbers =function(req,res){
   });
 
 }
-
+// function to get a number detail with a number provided
 module.exports.getPhoneNumber =function(req,res){
   var phoneNumber   = req.params.phoneNumber
   var params        = {
@@ -106,7 +112,7 @@ module.exports.getPhoneNumber =function(req,res){
 
 };
 
-
+// function to delete phone number
 module.exports.deletePhoneNumber =function (req,res) {
   var phoneNumber = req.params.phoneNumber;
   var params      = {
@@ -132,6 +138,7 @@ module.exports.deletePhoneNumber =function (req,res) {
 
 }
 
+// function to update phone number
 module.exports.updatePhoneNumber =function(req,res){
 
   var phoneNumber = req.params.phoneNumber;

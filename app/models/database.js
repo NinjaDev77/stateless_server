@@ -20,28 +20,35 @@ module.exports=function(){
                               });
 
   };
-    /**
-    * Create Table In The Database Or Check Whether It's Alive
-    *
-    */
+
+    // Create Table In The Database Or Check Whether It's Alive
+
+
      phoneNumber.createTablePhoneNumber(Client);
+     profile.createTableProfile(Client);
     // property.createTableProperty(Client);
     // messages.createTableMessage(Client);
     // appointments.createTableAppointments(Client);
     // dateTimeVisitProperty.createTableDTVisitProperty(Client);
 
+    // function to  list all the tables from dynamodb
     var listAllTable    =function(){
+
       Client.listTables({}, function(err, data) {
           if (err) console.log(err); // an error occurred
           else console.error(data); // successful response
       });
+
     };
 
+    // function to delete a table from dynamodb
     var deleteTable =function(table){
+
       Client.deleteTable({TableName :table}, function(err, data) {
           if (err) ppJson(err); // an error occurred
           else ppJson(data); // successful response
       });
+
     };
 
 

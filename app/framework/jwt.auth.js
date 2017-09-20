@@ -1,12 +1,12 @@
 var jwt = require('jsonwebtoken');
-
+  // Token Class
   function Token(username){
     this.username=username
   }
+  // Token generating method
   Token.prototype.createToken=function(){
-    // sign asynchronously
-  var token = jwt.sign(this.username, "test", { algorithm: 'HS256' },{ expiresIn: 60 * 60 * 60 });
-  return token
+    var token = jwt.sign(this.username, "test",{ algorithm: 'HS256', expiresIn: 60*60*24 });
+    return token
   }
 
 module.exports=Token
