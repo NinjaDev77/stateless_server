@@ -117,8 +117,9 @@ module.exports.deleteProfile=function(req,res) {
 
 };
 
-module.exports.updateProfile=function(res,res){
+module.exports.updateProfile=function(req,res){
   var phoneNumber         = req.params.phoneNumber;
+  var body                = req.body;
 
   var customerID          = req.body.customerID,
       customerType        = req.body.customerType,
@@ -126,37 +127,61 @@ module.exports.updateProfile=function(res,res){
       customerMobile      = req.body.customerMobile,
       uriAudioWelcome     = req.body.uriAudioWelcome,
       uriAudioAppointment = req.body.uriAudioAppointment,
-      routingActive       = req.body.routingActive,
-      routingPhone        = req.body.routingPhone;
+      routingActive       = (routingActive ? req.body.routingActive : undefined),
+      routingPhone        = (routingActive ? req.body.routingPhone : undefined);
+
+  // object to map to the db attribute value
+  var dbAttributeValue      = {
+                            ":cusId"    : customerID,
+                            ":cusType"  : customerType,
+                            ":cusEmail" : customerEmail,
+                            ":cusMobile": customerMobile,
+                            ":uriAudWel": uriAudioWelcome,
+                            ":uriAudApp": uriAudioAppointment,
+                            ":routAct"  : routingActive,
+                            ":routPhn"  : routingPhone,
+                            ":dtU"      : moment().toISOString()
+  };
+
+  // creating dynamic query string to map the Attribute values
+  var dbUpdateExpression  = "set "                                                              +
+                             (customerID          ? "customerID           = :cusId, "     : "") +
+                             (customerType        ? "customerType         = :cusType, "   : "") +
+                             (customerEmail       ? "customerEmail        = :cusEmail, "  : "") +
+                             (customerMobile      ? "customerMobile       = :cusMobile, " : "") +
+                             (uriAudioWelcome     ? "uriAudioWelcome      = :uriAudWel, " : "") +
+                             (uriAudioAppointment ? "uriAudioAppointment  = :uriAudApp, " : "") +
+                             (routingActive       ? "routingActive        = :routAct, "   : "") +
+                             (routingActive       ? "routingPhone         = :routPhn, "   : "") + "dateTimeUpdated = :dtU";
 
 
 
-  // var params      = {
-  //                     TableName: "profile",
-  //                     Key:{
-  //                         "phoneNumber":phoneNumber
-  //                     },
-  //                     UpdateExpression :"set active = :ac, dateTimeUpdated = :dtU",
-  //                     ExpressionAttributeValues:{
-  //                         ":ac":active,
-  //                         ":dtU": moment().toISOString()
-  //                     },
-  //                     ReturnValues:"UPDATED_NEW"
-  // };
-  // Client.update(params, function(err, data) {
-  //   if (err) {
-  //
-  //       console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
-  //       res.status(400).json({code:400,message :err.message});
-  //
-  //   } else {
-  //
-  //       //console.log("DeleteItem succeeded:", JSON.stringify(data, null, 2));
-  //       res.status(200).json({code:200,Description :"OK"});
-  //
-  //   }
-  //
-  // });
+  var params      = {
+                      TableName: "profile",
+                      Key:{
+                          "phoneNumber":phoneNumber
+                      },
+                      UpdateExpression :dbUpdateExpression,
+                      ExpressionAttributeValues:dbAttributeValue,
+                      ReturnValues:"UPDATED_NEW"
+  };
+  console.log(dbUpdateExpression);
+  console.log(dbAttributeValue);
+  //res.status(200).send("ok")
+  Client.update(params, function(err, data) {
+    if (err) {
+
+        console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
+        res.status(400).json({code:400,message :err.message});
+
+    } else {
+
+        //console.log("DeleteItem succeeded:", JSON.stringify(data, null, 2));
+        res.status(200).json({code:200,Description :"OK"});
+
+    }
+
+  });
 
 }
 

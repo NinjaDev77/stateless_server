@@ -11,19 +11,20 @@ var phoneNumberCtrl = require('../controllers/phoneNumberController');
       var token       = userToken.createToken();
       res.status(200).json({status :"OK", token:token});
     });
-    
+
     // Endpoints for phone number
-    router.post('/number',phoneNumberCtrl.createPhoneNumber);
-    router.get('/number',phoneNumberCtrl.getAllPhoneNumbers);
-    router.get('/number/:phoneNumber',phoneNumberCtrl.getPhoneNumber);
-    router.delete('/number/:phoneNumber',phoneNumberCtrl.deletePhoneNumber);
-    router.put('/number/:phoneNumber',phoneNumberCtrl.updatePhoneNumber);
+    router.post('/number', phoneNumberCtrl.createPhoneNumber);
+    router.get('/number', phoneNumberCtrl.getAllPhoneNumbers);
+    router.get('/number/:phoneNumber', phoneNumberCtrl.getPhoneNumber);
+    router.delete('/number/:phoneNumber', phoneNumberCtrl.deletePhoneNumber);
+    router.put('/number/:phoneNumber', phoneNumberCtrl.updatePhoneNumber);
 
 
     // Endpoints for profile
-    router.post('/profile/:phoneNumber',profileCtrl.createProfile);
-    router.get('/profile/:phoneNumber',isAuthticated,profileCtrl.getProfile);
-    router.delete('/profile/:phoneNumber',profileCtrl.deleteProfile);
+    router.post('/profile/:phoneNumber', profileCtrl.createProfile);
+    router.get('/profile/:phoneNumber', profileCtrl.getProfile);
+    router.delete('/profile/:phoneNumber', profileCtrl.deleteProfile);
+    router.put('/profile/:phoneNumber', profileCtrl.updateProfile)
 
     return router;
   }
