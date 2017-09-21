@@ -8,15 +8,15 @@ var config    = require('../config/config');
 if (config.enviroment==='dev') {
 
   new AWS.DynamoDB({
-                      endpoint: config.dev.endpoint,
-                      region:config.dev.region ,
-                      accessKeyId:config.dev.accessKeyId,
-                      secretAccessKey:config.dev.secretAccessKey
+                      endpoint        : config.dev.endpoint,
+                      region          : config.dev.region ,
+                      accessKeyId     : config.dev.accessKeyId,
+                      secretAccessKey : config.dev.secretAccessKey
   });
 
   // connection to the DynamoDB
   var Client = new AWS.DynamoDB.DocumentClient();
-  
+
 };
 
 // function to create phone number
@@ -144,31 +144,74 @@ module.exports.updatePhoneNumber =function(req,res){
   var phoneNumber = req.params.phoneNumber;
   var active      = req.body.active;
 
-  var params      = {
-                      TableName: "phoneNumber",
-                      Key:{
-                          "phoneNumber":phoneNumber
-                      },
-                      UpdateExpression :"set active = :ac, dateTimeUpdated = :dtU",
-                      ExpressionAttributeValues:{
-                          ":ac":active,
-                          ":dtU": moment().toISOString()
-                      },
-                      ReturnValues:"UPDATED_NEW"
-  };
-  Client.update(params, function(err, data) {
-    if (err) {
+  if (active === null || active == undefined) {
 
-        console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
-        res.status(400).json({code:400,message :err.message});
+    res.status(404).json({code:404 , message : "active is missing"}) ;
 
-    } else {
+  } else {
 
-        //console.log("DeleteItem succeeded:", JSON.stringify(data, null, 2));
-        res.status(200).json({code:200,Description :"OK"});
+    var params      = {
+                        TableName: "phoneNumber",
+                        Key:{
+                            "phoneNumber":phoneNumber
+                        },
+                        UpdateExpression :"set active = :ac, dateTimeUpdated = :dtU",
+                        ExpressionAttributeValues:{
+                            ":ac":active,
+                            ":dtU": moment().toISOString()
+                        },
+                        ReturnValues:"UPDATED_NEW"
+    };
 
-    }
+    Client.update(params, function(err, data) {
+      if (err) {
 
-  });
+          console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
+          res.status(400).json({code:400,message :err.message});
+
+      } else {
+
+          //console.log("DeleteItem succeeded:", JSON.stringify(data, null, 2));
+          res.status(200).json({code:200,Description :"OK"});
+
+      }
+
+    });
+
+  }
 
 }
+
+
+
+// for validation purpose
+function checkPhoneNumber (phoneNumber){
+
+  var params        = {
+                        TableName: "phoneNumber",
+                        KeyConditionExpression: "phoneNumber = :phn",
+                        ExpressionAttributeValues: {
+                            ":phn": phoneNumber
+                        }
+  };
+
+  return new Promise (function(resolve, reject){
+    Client.query(params, function(err, data) {
+        if (err) {
+
+            console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+            //res.status(400).json({code:400,message :err.message});
+
+          } else {
+              // if no records found then reject else resolve
+              if (data.Items.length === 0 ) {
+                   reject();
+              } else {
+                resolve()
+              }
+        }
+
+    });
+  })
+
+};

@@ -2,6 +2,7 @@ var jwt             = require('jsonwebtoken');
 var Token           = require('../framework/jwt.auth');
 var profileCtrl     = require('../controllers/profileController');
 var phoneNumberCtrl = require('../controllers/phoneNumberController');
+var validate = require('../framework/validation');
 
   // Endpoints of the whole application
   module.exports = function(router) {
@@ -13,24 +14,24 @@ var phoneNumberCtrl = require('../controllers/phoneNumberController');
     });
 
     // Endpoints for phone number
-    router.post('/number', phoneNumberCtrl.createPhoneNumber);
-    router.get('/number', phoneNumberCtrl.getAllPhoneNumbers);
-    router.get('/number/:phoneNumber', phoneNumberCtrl.getPhoneNumber);
-    router.delete('/number/:phoneNumber', phoneNumberCtrl.deletePhoneNumber);
-    router.put('/number/:phoneNumber', phoneNumberCtrl.updatePhoneNumber);
+    router.post('/number',isAuthenticated,phoneNumberCtrl.createPhoneNumber);
+    router.get('/number', isAuthenticated,phoneNumberCtrl.getAllPhoneNumbers);
+    router.get('/number/:phoneNumber', isAuthenticated,phoneNumberCtrl.getPhoneNumber);
+    router.delete('/number/:phoneNumber', isAuthenticated,phoneNumberCtrl.deletePhoneNumber);
+    router.put('/number/:phoneNumber', isAuthenticated, phoneNumberCtrl.updatePhoneNumber);
 
 
     // Endpoints for profile
-    router.post('/profile/:phoneNumber', profileCtrl.createProfile);
-    router.get('/profile/:phoneNumber', profileCtrl.getProfile);
-    router.delete('/profile/:phoneNumber', profileCtrl.deleteProfile);
-    router.put('/profile/:phoneNumber', profileCtrl.updateProfile)
+    router.post('/profile/:phoneNumber', isAuthenticated,validate.validateProfile,profileCtrl.createProfile);
+    router.get('/profile/:phoneNumber', isAuthenticated,profileCtrl.getProfile);
+    router.delete('/profile/:phoneNumber', isAuthenticated,profileCtrl.deleteProfile);
+    router.put('/profile/:phoneNumber', isAuthenticated, profileCtrl.updateProfile)
 
     return router;
   }
 
   // function to  check authenticate
-  function isAuthticated (req,res,next){
+  function isAuthenticated (req,res,next){
     // check header or url parameters or post parameters for token
   var token = req.body.token || req.query.token || req.headers['x-access-token'] || req.headers.token;
 
