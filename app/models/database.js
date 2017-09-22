@@ -28,7 +28,7 @@ module.exports=function(){
      profile.createTableProfile(Client);
     // property.createTableProperty(Client);
     // messages.createTableMessage(Client);
-    // appointments.createTableAppointments(Client);
+     appointments.createTableAppointments(Client);
     // dateTimeVisitProperty.createTableDTVisitProperty(Client);
 
     // function to  list all the tables from dynamodb
@@ -45,13 +45,12 @@ module.exports=function(){
     var deleteTable =function(table){
 
       Client.deleteTable({TableName :table}, function(err, data) {
-          if (err) ppJson(err); // an error occurred
-          else ppJson(data); // successful response
+          if (err) console.log(err); // an error occurred
+          else console.log(data); // successful response
       });
 
     };
 
 
-
-
+    //deleteTable('appointments');
 }

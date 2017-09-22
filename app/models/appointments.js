@@ -6,11 +6,19 @@ var appointments = {
             AttributeName: 'phoneNumber',
             KeyType: 'HASH',
         },
+        {
+            AttributeName: 'idProperty',
+            KeyType: 'RANGE',
+        },
 
     ],
     AttributeDefinitions: [
         {
             AttributeName: 'phoneNumber',
+            AttributeType: 'S',
+        },
+        {
+            AttributeName: 'idProperty',
             AttributeType: 'S',
         }
     ],
@@ -18,15 +26,15 @@ var appointments = {
         ReadCapacityUnits: 5,
         WriteCapacityUnits: 5,
     },
-    };
+};
 
-module.exports.createTableAppointments=function(con){
+module.exports.createTableAppointments = function(con){
   if (con) {
     // check table is exists or not
-    con.describeTable({TableName: 'messages'},function(err,data){
+    con.describeTable({TableName: 'appointments'},function(err,data){
       if(err) {
         // create table if not exist
-        if (err.statusCode ===400) {
+        if (err.statusCode === 400) {
           con.createTable(appointments, function(err, data) {
               if (err) console.error(err); // an error occurred
               else console.log("appointments table is created");
