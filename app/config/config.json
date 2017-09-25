@@ -5,6 +5,7 @@
     "accessKeyId":"abcd" ,
     "secretAccessKey":"abcd",
     "port"           :4000
+
   },
   "prod":{
     "endpoint":"",
@@ -14,5 +15,5 @@
     "port":""
   },
   "enviroment" : "dev"
-  
+
 }

@@ -24,6 +24,8 @@ var config      = require('./config/config'),
     // middleware
     app.use(morgan('dev'));
     app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({ extended: true }));
+    //app.use(bodyParser.raw({ type: 'audio/wav', limit: '50mb' }));
     app.use('/v1',apiRoutes(Router));
 
 

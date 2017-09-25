@@ -1,7 +1,8 @@
-var moment    = require('moment');
-var uuid      = require('uuid/v4');
-var AWS       = require("aws-sdk")
-var config    = require('../config/config');
+var moment            = require('moment');
+var uuid              = require('uuid/v4');
+var AWS               = require("aws-sdk");
+var isE164PhoneNumber = require('is-e164-phone-number');
+var config            = require('../config/config');
 
 
 // check enviroment is developemet or not

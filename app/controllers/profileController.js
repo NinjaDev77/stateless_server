@@ -7,10 +7,10 @@ var validation  = require('../framework/validation')
 
 if (config.enviroment==='dev') {
   AWS.config.update({
-                      endpoint: config.dev.endpoint,
-                      region:config.dev.region ,
-                      accessKeyId:config.dev.accessKeyId,
-                      secretAccessKey:config.dev.secretAccessKey
+                      endpoint        : config.dev.endpoint,
+                      region          :   config.dev.region ,
+                      accessKeyId     : config.dev.accessKeyId,
+                      secretAccessKey : config.dev.secretAccessKey
                     });
   var Client = new AWS.DynamoDB.DocumentClient();
 }
@@ -150,7 +150,7 @@ module.exports.deleteProfile=function(req,res) {
 };
 
 module.exports.updateProfile=function(req,res){
-  console.log("asgdhasgdhs");
+
 
   var phoneNumber         = req.params.phoneNumber;
   // function to check phone number exist of not
