@@ -28,16 +28,24 @@ exports.handler = (event, context, callback) => {
 
     switch (event.httpMethod) {
         case 'DELETE':
-            dynamo.deleteItem(JSON.parse(event.body), done);
+            // dynamo.deleteItem(JSON.parse(event.body), done);
+            const res = PhoneController.deletePhoneNumber(JSON.parse(event.body));
+            callback(null, res);
             break;
         case 'GET':
-            dynamo.scan({ TableName: event.queryStringParameters.TableName }, done);
+            // dynamo.scan({ TableName: event.queryStringParameters.TableName }, done);
+            const res = PhoneController.getAllPhoneNumbers();
+            callback(null, res);
             break;
         case 'POST':
-            dynamo.putItem(JSON.parse(event.body), done);
+            // dynamo.putItem(JSON.parse(event.body), done);
+            const res = PhoneController.createPhoneNumber(JSON.parse(event.body));
+            callback(null, res);
             break;
         case 'PUT':
-            dynamo.updateItem(JSON.parse(event.body), done);
+            // dynamo.updateItem(JSON.parse(event.body), done);
+            const res = PhoneController.updatePhoneNumber(JSON.parse(event.body));
+            callback(null, res);
             break;
         default:
             done(new Error(`Unsupported method "${event.httpMethod}"`));
