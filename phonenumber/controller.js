@@ -11,7 +11,10 @@ const dynamo 			= new doc.DynamoDB();
 const isE164PhoneNumber = require('is-e164-phone-number');
 
 // function to create phone number
-module.exports.createPhoneNumber = function(body){
+module.exports.createPhoneNumber = function(event, context){
+
+	let req           = event;
+  let body          = JSON.parse(req.body);
 
 	if (body.phoneNumber===undefined || body.phoneNumber === null) {
 		return {statusCode: '400' ,body: { message : "Bad request"}};
@@ -29,7 +32,7 @@ module.exports.createPhoneNumber = function(body){
 			ReturnItemCollectionMetrics: 'NONE', // optional (NONE | SIZE)
 		};
 
-		dynamo.putItem(params, function(err, res) { 
+		dynamo.putItem(params, function(err, res) {
 
 			const done = {
 			    statusCode: err ? '400' : '200',
@@ -39,7 +42,7 @@ module.exports.createPhoneNumber = function(body){
 			    },
 			};
 
-			return done;
+			context.succeed(done);
 
 		});
 
@@ -48,14 +51,14 @@ module.exports.createPhoneNumber = function(body){
 };
 
 // function to get all phone numbers
-module.exports.getAllPhoneNumbers =function(){
+module.exports.getAllPhoneNumbers =function(event, context){
 
 	var params = {
 		TableName: "phoneNumber",
 		ReturnConsumedCapacity   : "TOTAL"
 	};
 
-	dynamo.scan(params, function(err, res) { 
+	dynamo.scan(params, function(err, res) {
 
 		const done = {
 		    statusCode: err ? '400' : '200',
@@ -65,14 +68,14 @@ module.exports.getAllPhoneNumbers =function(){
 		    },
 		};
 
-		return done;
+		context.succeed(done);
 
 	});
 
 };
 
 // function to get a number detail with a number provided
-module.exports.getPhoneNumber =function(body){
+module.exports.getPhoneNumber =function(event, context){
 
 	var phoneNumber = body.phoneNumber
 	var params      = {
@@ -83,7 +86,7 @@ module.exports.getPhoneNumber =function(body){
 		}
 	}
 
-	dynamo.scan(params, function(err, res) { 
+	dynamo.scan(params, function(err, res) {
 
 		const done = {
 		    statusCode: err ? '400' : '200',
@@ -93,14 +96,14 @@ module.exports.getPhoneNumber =function(body){
 		    },
 		};
 
-		return done;
+		context.succeed(done);
 
 	});
 
 };
 
 // function to update a number details with a number provided
-module.exports.updatePhoneNumber =function(body){
+module.exports.updatePhoneNumber =function(event, context){
 
 	var phoneNumber = body.phoneNumber;
 	var active      = body.active;
@@ -124,7 +127,7 @@ module.exports.updatePhoneNumber =function(body){
         ReturnValues:"UPDATED_NEW"
     };
 
-    dynamo.updateItem(params, function(err, res) { 
+    dynamo.updateItem(params, function(err, res) {
 
 		const done = {
 		    statusCode: err ? '400' : '200',
@@ -134,7 +137,7 @@ module.exports.updatePhoneNumber =function(body){
 		    },
 		};
 
-		return done;
+		context.succeed(done);
 
 	});
 
@@ -143,7 +146,7 @@ module.exports.updatePhoneNumber =function(body){
 };
 
 // function to delete phone number
-module.exports.deletePhoneNumber =function (body) {
+module.exports.deletePhoneNumber =function (event, context) {
 
 	var phoneNumber = body.phoneNumber;
 	var params      = {
@@ -153,7 +156,7 @@ module.exports.deletePhoneNumber =function (body) {
 		}
 	};
 
-	dynamo.deleteItem(params, function(err, res) { 
+	dynamo.deleteItem(params, function(err, res) {
 
 		const done = {
 		    statusCode: err ? '400' : '200',
@@ -163,7 +166,7 @@ module.exports.deletePhoneNumber =function (body) {
 		    },
 		};
 
-		return done;
+		context.succeed(done);
 
 	});
 

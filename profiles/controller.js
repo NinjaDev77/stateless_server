@@ -16,24 +16,28 @@ module.exports.getProfile=function(event,context){
   let req           = event;
   let body          = JSON.parse(req.body);
   let params        = req.pathParameters;
-  let phoneNumber   = params.phoneNumber || event.params ;
+  console.log("params" + JSON.stringify(event.params.phoneNumber));
+  let phoneNumber   = event.params.phoneNumber
 
-  if (phoneNumber === undefined ) {
+  // if (phoneNumber === undefined ) {
+  //
+  //   context.succeed({code : 404 , message : 'No number was provided'});
+  //
+  // } else {
 
-    context.succeed({code : 404 , message : 'No number was provided'});
-
-  } else {
-
-    var payload        = {
+    // var payload        = {
+    //   TableName: "profile",
+    //   KeyConditionExpression: "phoneNumber = :phn",
+    //   ExpressionAttributeValues: {
+    //     ":phn": phoneNumber
+    //   }
+    // };
+    var payload = {
       TableName: "profile",
-      KeyConditionExpression: "phoneNumber = :phn",
-      ExpressionAttributeValues: {
-        ":phn": phoneNumber
-      }
-    };
-
+  		ReturnConsumedCapacity   : "TOTAL"
+    }
     // function to get profile in dynamodb with the above params
-    dynamo.query(payload, function(err, data) {
+    dynamo.scan(payload, function(err, data) {
       if (err) {
         console.error(err);
         context.succeed({code : 400 , message : 'Error in getting profile'});
@@ -47,13 +51,13 @@ module.exports.getProfile=function(event,context){
         } else {
 
           context.succeed({code:200 , message : "OK" , data: data.Items});
-          
+
         }
 
       }
 
     });
-  }
+//  }
 
 };
 
@@ -64,16 +68,16 @@ module.exports.createProfile = function(event,context){
   let body                = JSON.parse(req.body);
   let params              = req.pathParameters;
 
-  let phoneNumber         = params.phoneNumber || event.params ;
+  let phoneNumber         = event.params.phoneNumber;
 
   let customerID          = body.customerID,
-  customerType        = body.customerType,
-  customerEmail       = body.customerEmail,
-  customerMobile      = body.customerMobile,
-  uriAudioWelcome     = body.uriAudioWelcome,
-  uriAudioAppointment = body.uriAudioAppointment,
-  routingActive       = body.routingActive,
-  routingPhone        = body.routingActive;
+      customerType        = body.customerType,
+      customerEmail       = body.customerEmail,
+      customerMobile      = body.customerMobile,
+      uriAudioWelcome     = body.uriAudioWelcome,
+      uriAudioAppointment = body.uriAudioAppointment,
+      routingActive       = body.routingActive,
+      routingPhone        = body.routingActive;
 
   var payload = {
     TableName: 'profile',
@@ -121,7 +125,7 @@ module.exports.deleteProfile = function(event, context){
   let body        = JSON.parse(req.body);
   let params      = req.pathParameters;
 
-  let phoneNumber = params.phoneNumber || event.params ;
+  let phoneNumber = event.params.phoneNumber;
 
 
   let payloads = {
@@ -153,7 +157,7 @@ module.exports.updateProfile = function(event, context){
   let req                 = event;
   let body                = JSON.parse(req.body);
   let params              = req.pathParameters;
-  let phoneNumber         = params.phoneNumber || event.params ;
+  let phoneNumber         = event.params.phoneNumber ;
   let customerID          = body.customerID ;
   let customerType        = body.customerType ;
   let customerEmail       = body.customerEmail ;

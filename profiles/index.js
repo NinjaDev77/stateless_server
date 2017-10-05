@@ -32,7 +32,7 @@ exports.handler = (event, context, callback) => {
     case 'DELETE':
       controller.deleteProfile(event, context);
       break;
-      
+
     case 'PUT':
       controller.updateProfile(event, context);
       break;
