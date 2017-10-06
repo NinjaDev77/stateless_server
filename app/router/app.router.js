@@ -6,6 +6,8 @@ var validate          = require('../framework/validation');
 var routerMiddleware  = require('./routerMiddleware');
 var uploadS3          = require('../framework/awsS3');
 var audioWelcomeCtrl  = require('../controllers/audiosController');
+var twilioFrame       = require('../framework/twilio');
+
 
 
   // Endpoints of the whole application
@@ -14,7 +16,7 @@ var audioWelcomeCtrl  = require('../controllers/audiosController');
     var isAuthenticated        = routerMiddleware.isAuthenticated,
         checkPhoneNumber       = routerMiddleware.checkPhoneNumber ;
 
-    router.post('/authenticate',checkPhoneNumber,authenticate)
+    router.post('/authenticate',checkPhoneNumber,authenticate);
 
     // Endpoints for phone number
     router.post('/numbers',phoneNumberCtrl.createPhoneNumber);
@@ -35,6 +37,16 @@ var audioWelcomeCtrl  = require('../controllers/audiosController');
     router.get('/audios/:phoneNumber/welcome', audioWelcomeCtrl.getWelcomeAudio);
     router.delete('/audios/:phoneNumber/welcome',audioWelcomeCtrl.deleteWelcomeAudio);
 
+    // endpoints doe notification
+    router.post('/notifications/voice/:phoneNumber',function(req,res,next){
+      var phoneNumber = req.params.phoneNumber;
+      var { toPhoneNumber } = req.body;
+      twilioFrame.twilioOutboundCalls(toPhoneNumber,'',function(err,call){
+        res.json(call.sid);
+      })
+
+
+    })
     return router;
 
     function authenticate (req,res,next){
