@@ -1,99 +1,109 @@
 'use strict';
 
-const moment            = require('moment');
-
-const uuid              = require('uuid/v4');
+const moment = require('moment');
+const uuid = require('uuid/v4');
 const isE164PhoneNumber = require('is-e164-phone-number');
-const doc               = require('dynamodb-doc');
-const AWS               = require('aws-sdk');
+const doc = require('dynamodb-doc');
+const AWS = require('aws-sdk');
 
 
-const dynamo            = new AWS.DynamoDB.DocumentClient();
+const dynamo = new AWS.DynamoDB.DocumentClient();
 
 // function to get profile
-module.exports.getProfile=function(event,context){
+module.exports.getProfile = function(event, context, callback) {
+  var phoneNumber = event.pathParameters.proxy;
 
-  let req           = event;
-  let body          = JSON.parse(req.body);
-  let params        = req.pathParameters;
-  console.log("params" + JSON.stringify(event.params.phoneNumber));
-  let phoneNumber   = event.params.phoneNumber
-
-  // if (phoneNumber === undefined ) {
-  //
-  //   context.succeed({code : 404 , message : 'No number was provided'});
-  //
-  // } else {
-
-    // var payload        = {
-    //   TableName: "profile",
-    //   KeyConditionExpression: "phoneNumber = :phn",
-    //   ExpressionAttributeValues: {
-    //     ":phn": phoneNumber
-    //   }
-    // };
-    var payload = {
-      TableName: "profile",
-  		ReturnConsumedCapacity   : "TOTAL"
+  var payload = {
+    TableName: "profile",
+    KeyConditionExpression: "phoneNumber = :phn",
+    ExpressionAttributeValues: {
+      ":phn": phoneNumber
     }
-    // function to get profile in dynamodb with the above params
-    dynamo.scan(payload, function(err, data) {
-      if (err) {
-        console.error(err);
-        context.succeed({code : 400 , message : 'Error in getting profile'});
+  };
+  // var payload = {
+  //   TableName: "profile",
+  // 	ReturnConsumedCapacity   : "TOTAL"
+  // }
+  // function to get profile in dynamodb with the above params
+  dynamo.query(payload, function(err, data) {
+    if (err) {
+      console.error(err);
+      var response = {
+        statusCode: 400,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "message": "Error in getting profile"
+        })
+      };
+      callback(null, response);
+
+    } else {
+
+      if (data.Items.length === 0) {
+        var response = {
+          statusCode: 200,
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "message": "No profile was Found !"
+          })
+        };
+        callback(null, response);
 
       } else {
 
-        if (data.Items.length === 0 ) {
-
-          context.succeed({code : 200 , message : "No profile found !"});
-
-        } else {
-
-          context.succeed({code:200 , message : "OK" , data: data.Items});
-
-        }
-
+        var response = {
+          statusCode: 200,
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "message": "OK",
+            "data": data.Items
+          })
+        };
+        callback(null, response);
       }
 
-    });
-//  }
+    }
+
+  });
+  //  }
 
 };
 
 // function to create profile
-module.exports.createProfile = function(event,context){
-  let req                 = event;
+module.exports.createProfile = function(event, context, callback) {
+  let body = JSON.parse(event.body);
+  let phoneNumber = event.pathParameters.proxy;
 
-  let body                = JSON.parse(req.body);
-  let params              = req.pathParameters;
-
-  let phoneNumber         = event.params.phoneNumber;
-
-  let customerID          = body.customerID,
-      customerType        = body.customerType,
-      customerEmail       = body.customerEmail,
-      customerMobile      = body.customerMobile,
-      uriAudioWelcome     = body.uriAudioWelcome,
-      uriAudioAppointment = body.uriAudioAppointment,
-      routingActive       = body.routingActive,
-      routingPhone        = body.routingActive;
+  let customerID        = body.customerID,
+    customerType        = body.customerType,
+    customerEmail       = body.customerEmail,
+    customerMobile      = body.customerMobile,
+    uriAudioWelcome     = body.uriAudioWelcome,
+    uriAudioAppointment = body.uriAudioAppointment,
+    routingActive       = body.routingActive,
+    routingPhone        = body.routingActive;
 
   var payload = {
     TableName: 'profile',
     Item: { // a map of attribute name to AttributeValue
 
-      "phoneNumber": phoneNumber,
-      "customerType":body.customerType,
-      "customerID"  :body.customerID,
-      "customerEmail":body.customerEmail,
-      "customerMobile":body.customerMobile,
-      "uriAudioWelcome":body.uriAudioWelcome,
-      "uriAudioAppointment":body.uriAudioAppointment,
-      "routingActive":body.routingActive,
-      "routingPhone":body.routingPhone,
-      "dateTimeCreated":moment().toISOString(),
-      "dateTimeUpdated":moment().toISOString()
+      "phoneNumber"         : phoneNumber,
+      "customerType"        : body.customerType,
+      "customerID"          : body.customerID,
+      "customerEmail"       : body.customerEmail,
+      "customerMobile"      : body.customerMobile,
+      "uriAudioWelcome"     : body.uriAudioWelcome,
+      "uriAudioAppointment" : body.uriAudioAppointment,
+      "routingActive"       : body.routingActive,
+      "routingPhone"        : body.routingPhone,
+      "dateTimeCreated"     : moment().toISOString(),
+      "dateTimeUpdated"     : moment().toISOString()
 
     },
     ReturnValues: 'NONE', // optional (NONE | ALL_OLD)
@@ -105,12 +115,30 @@ module.exports.createProfile = function(event,context){
     if (err) {
 
       console.error(err); // an error occurred
-      context.succeed({code:400,message :"error"});
+      var response = {
+        statusCode: 400,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "message": "Error in updating profile"
+        })
+      };
+      callback(null, response);
+
 
     } else {
 
-      //console.log(JSON.stringify(data));
-      context.succeed({code:200,Description :"OK"});
+      var response = {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "message": "OK"
+        })
+      };
+      callback(null, response);
 
     } // successful response
   });
@@ -118,20 +146,13 @@ module.exports.createProfile = function(event,context){
 }
 
 //function to delete profile
-module.exports.deleteProfile = function(event, context){
+module.exports.deleteProfile = function(event, context, callback) {
 
-  let req         = event;
-
-  let body        = JSON.parse(req.body);
-  let params      = req.pathParameters;
-
-  let phoneNumber = event.params.phoneNumber;
-
-
-  let payloads = {
+  var phoneNumber = event.pathParameters.proxy;
+  var payloads = {
     TableName: "profile",
-    Key:{
-      "phoneNumber":phoneNumber
+    Key: {
+      "phoneNumber": phoneNumber
     }
   }
   // function to delete profile in dynamodb
@@ -139,12 +160,30 @@ module.exports.deleteProfile = function(event, context){
     if (err) {
 
       console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
-      context.succeed({code:400,message :"error"});
+      var response = {
+        statusCode: 400,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "message": "Error in delete profile"
+        })
+      };
+      callback(null, response);
 
     } else {
 
-      //console.log("DeleteItem succeeded:", JSON.stringify(data, null, 2));
-      context.succeed({code:200,Description :"OK"});
+      var response = {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "message": "OK"
+        })
+      };
+      callback(null, response);
+
 
     }
 
@@ -152,23 +191,23 @@ module.exports.deleteProfile = function(event, context){
 }
 
 // function to update profile
-module.exports.updateProfile = function(event, context){
+module.exports.updateProfile = function(event, context, callback) {
 
   let req                 = event;
   let body                = JSON.parse(req.body);
   let params              = req.pathParameters;
-  let phoneNumber         = event.params.phoneNumber ;
-  let customerID          = body.customerID ;
-  let customerType        = body.customerType ;
-  let customerEmail       = body.customerEmail ;
-  let customerMobile      = body.customerMobile ;
-  let uriAudioWelcome     = body.uriAudioWelcome ;
-  let uriAudioAppointment = body.uriAudioAppointment ;
+  let phoneNumber         = event.pathParameters.proxy;
+  let customerID          = body.customerID;
+  let customerType        = body.customerType;
+  let customerEmail       = body.customerEmail;
+  let customerMobile      = body.customerMobile;
+  let uriAudioWelcome     = body.uriAudioWelcome;
+  let uriAudioAppointment = body.uriAudioAppointment;
   let routingActive       = (body.routingActive === true ? body.routingActive : undefined);
   let routingPhone        = (body.routingActive === true ? body.routingPhone : undefined);
 
   // object to map to the db attribute value
-  let dbAttributeValue      = {
+  let dbAttributeValue = {
     ":cusId"    : customerID,
     ":cusType"  : customerType,
     ":cusEmail" : customerEmail,
@@ -181,35 +220,54 @@ module.exports.updateProfile = function(event, context){
   };
 
   // creating dynamic query string to map the Attribute values
-  let dbUpdateExpression  = "set "                                                              +
-  (customerID          ? "customerID           = :cusId, "     : "") +
-  (customerType        ? "customerType         = :cusType, "   : "") +
-  (customerEmail       ? "customerEmail        = :cusEmail, "  : "") +
-  (customerMobile      ? "customerMobile       = :cusMobile, " : "") +
-  (uriAudioWelcome     ? "uriAudioWelcome      = :uriAudWel, " : "") +
-  (uriAudioAppointment ? "uriAudioAppointment  = :uriAudApp, " : "") +
-  (routingActive       ? "routingActive        = :routAct, "   : "") +
-  (routingActive       ? "routingPhone         = :routPhn, "   : "") + "dateTimeUpdated = :dtU";
+  let dbUpdateExpression = "set " +
+    (customerID           ? "customerID           = :cusId, "     : "") +
+    (customerType         ? "customerType         = :cusType, "   : "") +
+    (customerEmail        ? "customerEmail        = :cusEmail, "  : "") +
+    (customerMobile       ? "customerMobile       = :cusMobile, " : "") +
+    (uriAudioWelcome      ? "uriAudioWelcome      = :uriAudWel, " : "") +
+    (uriAudioAppointment  ? "uriAudioAppointment  = :uriAudApp, " : "") +
+    (routingActive        ? "routingActive        = :routAct, "   : "") +
+    (routingActive        ? "routingPhone         = :routPhn, "   : "") + "dateTimeUpdated = :dtU";
 
-  let payloads      = {
+  let payloads = {
     TableName: "profile",
-    Key:{
-      "phoneNumber":phoneNumber
+    Key: {
+      "phoneNumber": phoneNumber
     },
-    UpdateExpression :dbUpdateExpression,
-    ExpressionAttributeValues:dbAttributeValue,
-    ReturnValues:"UPDATED_NEW"
+    UpdateExpression: dbUpdateExpression,
+    ExpressionAttributeValues: dbAttributeValue,
+    ReturnValues: "UPDATED_NEW"
   };
   console.log(payloads);
   dynamo.update(payloads, function(err, data) {
     if (err) {
 
       console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
-      context.succeed({code:400,message :err.message});
+      var response = {
+        statusCode: 400,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "message": "Error in profile"
+        })
+      };
+      callback(null, response);
 
     } else {
-      //console.log("DeleteItem succeeded:", JSON.stringify(data, null, 2));
-      context.succeed({code:200,Description :"OK"});
+
+      var response = {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "message": "OK"
+        })
+      };
+      callback(null, response);
+
     }
 
   });

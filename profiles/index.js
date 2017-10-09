@@ -1,43 +1,45 @@
 'use strict';
+var controller = require("./controller");
 
-const isE164PhoneNumber = require('is-e164-phone-number');
-
-const controller = require('./controller.js');
-
-
-/**
-* Demonstrates a simple HTTP endpoint using API Gateway. You have full
-* access to the request and response payload, including headers and
-* status code.
-*
-* To scan a DynamoDB table, make a GET request with the TableName as a
-* query string parameter. To put, update, or delete an item, make a POST,
-* PUT, or DELETE request respectively, passing in the payload to the
-* DynamoDB API as a JSON body.
-*/
-exports.handler = (event, context, callback) => {
-  //console.log('Received event:', JSON.stringify(event, null, 2));
+exports.handler = function(event, context, callback) {
 
   switch (event.httpMethod) {
 
-    case 'GET':
-    // dynamo.scan({ TableName: event.queryStringParameters.TableName }, done);
-      controller.getProfile(event, context);
+    case 'GET' :
+
+      controller.getProfile(event, context, callback);
       break;
 
-    case 'POST':
-      controller.createProfile(event, context);
+    case 'POST' :
+
+      controller.createProfile(event, context, callback);
       break;
 
-    case 'DELETE':
-      controller.deleteProfile(event, context);
+    case 'PUT' :
+
+      controller.updateProfile(event, context, callback);
       break;
 
-    case 'PUT':
-      controller.updateProfile(event, context);
+    case 'DELETE' :
+
+      controller.deleteProfile(event, context, callback);
       break;
 
     default:
-      done(new Error(`Unsupported method "${event.httpMethod}"`));
+      defaultFunctionCall(event, context, callback);
+
   }
 };
+
+function defaultFunctionCall(event, context, callback) {
+  var response = {
+    statusCode: 200,
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: " bad request"
+    })
+  };
+  callback(null, response);
+}
