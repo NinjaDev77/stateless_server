@@ -77,72 +77,123 @@ module.exports.getProfile = function(event, context, callback) {
 
 // function to create profile
 module.exports.createProfile = function(event, context, callback) {
+
   let body = JSON.parse(event.body);
   let phoneNumber = event.pathParameters.proxy;
+  var ifNumbervalid = isE164PhoneNumber('+' + phoneNumber)
+  if (!ifNumbervalid) {
 
-  let customerID        = body.customerID,
-    customerType        = body.customerType,
-    customerEmail       = body.customerEmail,
-    customerMobile      = body.customerMobile,
-    uriAudioWelcome     = body.uriAudioWelcome,
-    uriAudioAppointment = body.uriAudioAppointment,
-    routingActive       = body.routingActive,
-    routingPhone        = body.routingActive;
+    var response = {
+      statusCode: 400,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        "message": "Number is not valid"
+      })
+    };
+    callback(null, response);
 
-  var payload = {
-    TableName: 'profile',
-    Item: { // a map of attribute name to AttributeValue
+  } else {
 
-      "phoneNumber"         : phoneNumber,
-      "customerType"        : body.customerType,
-      "customerID"          : body.customerID,
-      "customerEmail"       : body.customerEmail,
-      "customerMobile"      : body.customerMobile,
-      "uriAudioWelcome"     : body.uriAudioWelcome,
-      "uriAudioAppointment" : body.uriAudioAppointment,
-      "routingActive"       : body.routingActive,
-      "routingPhone"        : body.routingPhone,
-      "dateTimeCreated"     : moment().toISOString(),
-      "dateTimeUpdated"     : moment().toISOString()
+    isPhoneNumberExit(phoneNumber).then(function(){
 
-    },
-    ReturnValues: 'NONE', // optional (NONE | ALL_OLD)
-    ReturnConsumedCapacity: 'NONE', // optional (NONE | TOTAL | INDEXES)
-    ReturnItemCollectionMetrics: 'NONE', // optional (NONE | SIZE)
-  };
-  //method to put into the dynamodb
-  dynamo.put(payload, function(err, data) {
-    if (err) {
+      var customerID          = body.customerID,
+          customerType        = body.customerType,
+          customerEmail       = body.customerEmail,
+          customerMobile      = body.customerMobile,
+          uriAudioWelcome     = body.uriAudioWelcome,
+          uriAudioAppointment = body.uriAudioAppointment,
+          routingActive       = body.routingActive,
+          routingPhone        = body.routingActive;
 
-      console.error(err); // an error occurred
+      if (
+        customerID    === null  || customerID     === undefined  ||
+        customerType  === null  || customerType   === undefined  ||
+        customerEmail === null  || customerEmail  === undefined  ||
+        routingActive === null  || routingActive  === undefined
+      ){
+        var response = {
+          statusCode: 400,
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "message": "Mandator Field is missing !"
+          })
+        };
+        callback(null, response);
+
+      } else {
+
+        var payload = {
+          TableName: 'profile',
+          Item: { // a map of attribute name to AttributeValue
+
+            "phoneNumber"         : phoneNumber,
+            "customerType"        : body.customerType,
+            "customerID"          : body.customerID,
+            "customerEmail"       : body.customerEmail,
+            "customerMobile"      : body.customerMobile,
+            "uriAudioWelcome"     : body.uriAudioWelcome,
+            "uriAudioAppointment" : body.uriAudioAppointment,
+            "routingActive"       : body.routingActive,
+            "routingPhone"        : body.routingPhone,
+            "dateTimeCreated"     : moment().toISOString(),
+            "dateTimeUpdated"     : moment().toISOString()
+          },
+          ReturnValues: 'NONE', // optional (NONE | ALL_OLD)
+          ReturnConsumedCapacity: 'NONE', // optional (NONE | TOTAL | INDEXES)
+          ReturnItemCollectionMetrics: 'NONE', // optional (NONE | SIZE)
+        };
+        //method to put into the dynamodb
+        dynamo.put(payload, function(err, data) {
+          if (err) {
+
+            console.error(err); // an error occurred
+            var response = {
+              statusCode: 400,
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                "message": "Error in updating profile"
+              })
+            };
+            callback(null, response);
+
+          } else {
+
+            var response = {
+              statusCode: 200,
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                "message": "OK"
+              })
+            };
+            callback(null, response);
+
+          }
+        });
+
+      }
+
+    }).catch(function(){
       var response = {
         statusCode: 400,
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          "message": "Error in updating profile"
+          "message": "Phone number not found !"
         })
       };
       callback(null, response);
+    })
 
-
-    } else {
-
-      var response = {
-        statusCode: 200,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          "message": "OK"
-        })
-      };
-      callback(null, response);
-
-    } // successful response
-  });
-
+  }
 }
 
 //function to delete profile
@@ -271,5 +322,37 @@ module.exports.updateProfile = function(event, context, callback) {
     }
 
   });
+
+}
+
+function isPhoneNumberExit(phoneNumber){
+  var payloads        = {
+    TableName: "phoneNumber",
+    KeyConditionExpression: "phoneNumber = :phn",
+    ExpressionAttributeValues: {
+      ":phn": phoneNumber
+    }
+  };
+  return new Promise (function(resolve, reject){
+
+    dynamo.query(payloads, function(err, data) {
+      console.log(data);
+      if (err) {
+
+        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+        //res.status(400).json({code:400,message :err.message});
+
+      } else {
+        // if no records found then reject else resolve
+        if (data.Items.length === 0 ) {
+          reject();
+
+        } else {
+          resolve()
+        }
+      }
+
+    });
+  })
 
 }
