@@ -1,0 +1,17 @@
+{
+  "name": "appointments",
+  "version": "1.0.0",
+  "description": "appointments crud",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jon Vaughn",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.126.0",
+    "is-e164-phone-number": "^1.0.0",
+    "moment": "^2.18.1",
+    "uuid": "^3.1.0"
+  }
+}
