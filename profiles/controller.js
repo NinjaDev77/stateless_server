@@ -11,7 +11,7 @@ const dynamo = new AWS.DynamoDB.DocumentClient();
 
 // function to get profile
 module.exports.getProfile = function(event, context, callback) {
-  var phoneNumber = event.pathParameters.proxy;
+  var phoneNumber = event.pathParameters.phoneNumber;
 
   var payload = {
     TableName: "profile",
@@ -79,7 +79,7 @@ module.exports.getProfile = function(event, context, callback) {
 module.exports.createProfile = function(event, context, callback) {
 
   let body = JSON.parse(event.body);
-  let phoneNumber = event.pathParameters.proxy;
+  let phoneNumber = event.pathParameters.phoneNumber;
   var ifNumbervalid = isE164PhoneNumber('+' + phoneNumber)
   if (!ifNumbervalid) {
 
@@ -199,7 +199,7 @@ module.exports.createProfile = function(event, context, callback) {
 //function to delete profile
 module.exports.deleteProfile = function(event, context, callback) {
 
-  var phoneNumber = event.pathParameters.proxy;
+  var phoneNumber = event.pathParameters.phoneNumber;
   var payloads = {
     TableName: "profile",
     Key: {
@@ -247,7 +247,7 @@ module.exports.updateProfile = function(event, context, callback) {
   let req                 = event;
   let body                = JSON.parse(req.body);
   let params              = req.pathParameters;
-  let phoneNumber         = event.pathParameters.proxy;
+  let phoneNumber         = event.pathParameters.phoneNumber;
   let customerID          = body.customerID;
   let customerType        = body.customerType;
   let customerEmail       = body.customerEmail;
@@ -325,7 +325,7 @@ module.exports.updateProfile = function(event, context, callback) {
 
 }
 
-function isPhoneNumberExit(phoneNumber){
+function isPhoneNumberExit(phoneNumber) {
   var payloads        = {
     TableName: "phoneNumber",
     KeyConditionExpression: "phoneNumber = :phn",
