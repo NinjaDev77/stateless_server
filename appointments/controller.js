@@ -235,7 +235,7 @@ module.exports.storeConsumerAppointment = function(event, context, callback){
 
   } else {
 
-    isPhoneNumberExist(phoneNumber).then(function(){
+    // isPhoneNumberExist(phoneNumber).then(function(){
 
       var idProperty          = body.idProperty,
           phoneTo             = body.phoneTo,
@@ -244,19 +244,24 @@ module.exports.storeConsumerAppointment = function(event, context, callback){
           createAt            = moment().toISOString(),
           updateAt            = moment().toISOString();
 
-      if (!isE164PhoneNumber('+' + phoneTo)) {
+      
+      if( phoneTo !== null || phoneTo !== undefined || phoneTo !== ''){
+        
+        if (!isE164PhoneNumber('+' + phoneTo)) {
 
-        var response = {
-          statusCode: 400,
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "message": "PhoneTo number is not in E164 format"
-          })
-        };
+          var response = {
+            statusCode: 400,
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              "message": "PhoneTo number is not in E164 format"
+            })
+          };
 
-        callback(null, response);
+          callback(null, response);
+
+        }
 
       }
 
@@ -326,20 +331,21 @@ module.exports.storeConsumerAppointment = function(event, context, callback){
 
       }
 
-    }).catch(function(){
-      var response = {
-        statusCode: 400,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          "message": "Phone number not found !"
-        })
-      };
-      callback(null, response);
-    })
+    // }).catch(function(){
+    //   var response = {
+    //     statusCode: 400,
+    //     headers: {
+    //       "Content-Type": "application/json"
+    //     },
+    //     body: JSON.stringify({
+    //       "message": "Phone number not found !"
+    //     })
+    //   };
+    //   callback(null, response);
+    // })
 
   }
+
 }
 
 // function to store appointments from number ( business customer )
@@ -366,7 +372,7 @@ module.exports.storeBusinessAppointment = function(event, context, callback){
 
   } else {
 
-    isIdPropertyExist(phoneNumber, idProperty).then(function(){
+    // isIdPropertyExist(phoneNumber, idProperty).then(function(){
 
       var phoneTo             = body.phoneTo,
           appointmentDateTime = moment().toISOString(),
@@ -374,19 +380,23 @@ module.exports.storeBusinessAppointment = function(event, context, callback){
           createAt            = moment().toISOString(),
           updateAt            = moment().toISOString();
 
-      if (!isE164PhoneNumber('+' + phoneTo)) {
+      if( phoneTo !== null && phoneTo !== undefined && phoneTo !== ''){
+        
+        if (!isE164PhoneNumber('+' + phoneTo)) {
 
-        var response = {
-          statusCode: 400,
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "message": "PhoneTo number is not in E164 format"
-          })
-        };
+          var response = {
+            statusCode: 400,
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              "message": "PhoneTo number is not in E164 format"
+            })
+          };
 
-        callback(null, response);
+          callback(null, response);
+
+        }
 
       }
 
@@ -458,18 +468,18 @@ module.exports.storeBusinessAppointment = function(event, context, callback){
 
       }
 
-    }).catch(function(){
-      var response = {
-        statusCode: 400,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          "message": "Phone number not found !"
-        })
-      };
-      callback(null, response);
-    })
+    // }).catch(function(){
+    //   var response = {
+    //     statusCode: 400,
+    //     headers: {
+    //       "Content-Type": "application/json"
+    //     },
+    //     body: JSON.stringify({
+    //       "message": "Phone number not found !"
+    //     })
+    //   };
+    //   callback(null, response);
+    // })
 
   }
 }
