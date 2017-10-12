@@ -76,13 +76,13 @@ function isIdPropertyExist(phoneNumber, idProperty){
 
 }
 
-// function to get appointments from number ( consumer customer )
-module.exports.getConsumerAppointment = function(event, context, callback){
+// function to get messages from number ( consumer customer )
+module.exports.getConsumerMessage = function(event, context, callback){
   
   var phoneNumber = event.pathParameters.phoneNumber;
 
   var payload = {
-    TableName: "appointments",
+    TableName: "messages",
     KeyConditionExpression: "phoneNumber = :phn",
     ExpressionAttributeValues: {
       ":phn": phoneNumber
@@ -101,7 +101,7 @@ module.exports.getConsumerAppointment = function(event, context, callback){
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          "message": "Error in getting appointment"
+          "message": "Error in getting message"
         })
       };
       callback(null, response);
@@ -116,7 +116,7 @@ module.exports.getConsumerAppointment = function(event, context, callback){
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            "message": "No appointment was found !"
+            "message": "No message was found !"
           })
         };
         callback(null, response);
@@ -143,18 +143,18 @@ module.exports.getConsumerAppointment = function(event, context, callback){
 
 };
 
-// function to get appointments from number ( business customer )
-module.exports.getBusinessAppointment = function(event, context, callback){
+// function to get messages from number ( business customer )
+module.exports.getBusinessMessage = function(event, context, callback){
   
   var phoneNumber = event.pathParameters.phoneNumber;
-  var idProperty  = event.pathParameters.idProperty;
+  var idPropertyCustomer  = event.pathParameters.idProperty;
 
   var payload = {
-    TableName: "appointments",
-    KeyConditionExpression: "phoneNumber = :phn AND idProperty = :id",
+    TableName: "messages",
+    KeyConditionExpression: "phoneNumber = :phn AND idPropertyCustomer = :id",
     ExpressionAttributeValues: {
       ":phn": phoneNumber,
-      ":id": idProperty
+      ":id": idPropertyCustomer
     }
   };
 
@@ -170,7 +170,7 @@ module.exports.getBusinessAppointment = function(event, context, callback){
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          "message": "Error in getting appointment"
+          "message": "Error in getting message"
         })
       };
       callback(null, response);
@@ -185,7 +185,7 @@ module.exports.getBusinessAppointment = function(event, context, callback){
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            "message": "No appointment was Found !"
+            "message": "No message was found !"
           })
         };
         callback(null, response);
@@ -212,8 +212,8 @@ module.exports.getBusinessAppointment = function(event, context, callback){
 
 };
 
-// function to store appointments from number ( consumer customer )
-module.exports.storeConsumerAppointment = function(event, context, callback){
+// function to store messages from number ( consumer customer )
+module.exports.storeConsumerMessage = function(event, context, callback){
 
   var body = JSON.parse(event.body);
   var phoneNumber = event.pathParameters.phoneNumber;
@@ -237,35 +237,10 @@ module.exports.storeConsumerAppointment = function(event, context, callback){
 
     // isPhoneNumberExist(phoneNumber).then(function(){
 
-      var idProperty          = body.idProperty,
-          phoneTo             = body.phoneTo,
-          appointmentDateTime = moment().toISOString(),
-          callStatus          = body.callStatus,
-          createAt            = moment().toISOString(),
-          updateAt            = moment().toISOString();
-
       
-      if( phoneTo !== null || phoneTo !== undefined || phoneTo !== ''){
-        
-        if (!isE164PhoneNumber('+' + phoneTo)) {
+      var urlRecording = body.urlRecording;
 
-          var response = {
-            statusCode: 400,
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              "message": "PhoneTo number is not in E164 format"
-            })
-          };
-
-          callback(null, response);
-
-        }
-
-      }
-
-      if (idProperty === null || idProperty === undefined || phoneTo === null || phoneTo === undefined || callStatus === null || callStatus === undefined || appointmentDateTime === null || appointmentDateTime === undefined){ 
+      if (urlRecording === null || urlRecording === undefined){ 
         
         var response = {
           statusCode: 400,
@@ -281,16 +256,10 @@ module.exports.storeConsumerAppointment = function(event, context, callback){
       } else {
 
         var payload = {
-          TableName: 'appointments',
+          TableName: 'messages',
           Item: { // a map of attribute name to AttributeValue
-
             "phoneNumber": phoneNumber,
-            "idProperty": idProperty,
-            "phoneTo": phoneTo,
-            "appointmentDateTime": appointmentDateTime,
-            "callStatus": callStatus,
-            "createAt": createAt,
-            "updateAt": updateAt
+            "urlRecording": urlRecording
           },
           ReturnValues: 'NONE', // optional (NONE | ALL_OLD)
           ReturnConsumedCapacity: 'NONE', // optional (NONE | TOTAL | INDEXES)
@@ -308,7 +277,7 @@ module.exports.storeConsumerAppointment = function(event, context, callback){
                 "Content-Type": "application/json"
               },
               body: JSON.stringify({
-                "message": "Error in creating appointment"
+                "message": "Error in creating message"
               })
             };
             callback(null, response);
@@ -348,12 +317,12 @@ module.exports.storeConsumerAppointment = function(event, context, callback){
 
 }
 
-// function to store appointments from number ( business customer )
-module.exports.storeBusinessAppointment = function(event, context, callback){
+// function to store messages from number ( business customer )
+module.exports.storeBusinessMessage = function(event, context, callback){
 
   var body = JSON.parse(event.body);
   var phoneNumber = event.pathParameters.phoneNumber;
-  var idProperty = event.pathParameters.idProperty;
+  var idPropertyCustomer = event.pathParameters.idProperty;
 
   var ifNumbervalid = isE164PhoneNumber('+' + phoneNumber)
   if (!ifNumbervalid) {
@@ -374,33 +343,9 @@ module.exports.storeBusinessAppointment = function(event, context, callback){
 
     // isIdPropertyExist(phoneNumber, idProperty).then(function(){
 
-      var phoneTo             = body.phoneTo,
-          appointmentDateTime = moment().toISOString(),
-          callStatus          = body.callStatus,
-          createAt            = moment().toISOString(),
-          updateAt            = moment().toISOString();
+      var urlRecording = body.urlRecording;
 
-      if( phoneTo !== null && phoneTo !== undefined && phoneTo !== ''){
-        
-        if (!isE164PhoneNumber('+' + phoneTo)) {
-
-          var response = {
-            statusCode: 400,
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              "message": "PhoneTo number is not in E164 format"
-            })
-          };
-
-          callback(null, response);
-
-        }
-
-      }
-
-      if (phoneTo === null || phoneTo === undefined || callStatus === null || callStatus === undefined || appointmentDateTime === null || appointmentDateTime === undefined){ 
+      if (urlRecording === null || urlRecording === undefined){
         
         var response = {
           statusCode: 400,
@@ -416,16 +361,11 @@ module.exports.storeBusinessAppointment = function(event, context, callback){
       } else {
 
         var payload = {
-          TableName: 'appointments',
+          TableName: 'messages',
           Item: { // a map of attribute name to AttributeValue
-
             "phoneNumber": phoneNumber,
-            "idProperty": idProperty,
-            "phoneTo": phoneTo,
-            "appointmentDateTime": appointmentDateTime,
-            "callStatus": callStatus,
-            "createAt": createAt,
-            "updateAt": updateAt
+            "idPropertyCustomer": idPropertyCustomer,
+            "urlRecording": urlRecording
           },
           ReturnValues: 'NONE', // optional (NONE | ALL_OLD)
           ReturnConsumedCapacity: 'NONE', // optional (NONE | TOTAL | INDEXES)
@@ -444,7 +384,7 @@ module.exports.storeBusinessAppointment = function(event, context, callback){
                 "Content-Type": "application/json"
               },
               body: JSON.stringify({
-                "message": "Error in creating appointment"
+                "message": "Error in creating message"
               })
             };
             callback(null, response);
@@ -482,59 +422,31 @@ module.exports.storeBusinessAppointment = function(event, context, callback){
     // })
 
   }
+
 }
 
-// function to update appointments from number ( consumer customer )
-module.exports.updateConsumerAppointment = function(event, context, callback){
+// function to delete messages from number ( consumer customer )
+module.exports.deleteConsumerMessage = function(event, context, callback) {
 
-  var phoneNumber         = event.pathParameters.phoneNumber;
-  var body                = JSON.parse(event.body);
-
-  var idProperty          = body.idProperty,
-      phoneTo             = body.phoneTo,
-      appointmentDateTime = moment().toISOString(),
-      callStatus          = body.callStatus,
-      updateAt            = moment().toISOString();
-
-
-  // object to map to the db attribute value
-  var dbAttributeValue    = {
-    ":idProperty"          : idProperty,
-    ":phoneTo"             : phoneTo,
-    ":appointmentDateTime" : appointmentDateTime,
-    ":callStatus"          : callStatus,
-    ":updateAt"            : updateAt
-  };
-
-  // creating dynamic query string to map the Attribute values
-  var dbUpdateExpression = "set "                                                +
-    (idProperty          ? "idProperty          = :idProperty, "           : "") +
-    (phoneTo             ? "phoneTo             = :phoneTo, "              : "") +
-    (appointmentDateTime ? "appointmentDateTime = :appointmentDateTime, "  : "") +
-    (callStatus          ? "callStatus          = :callStatus, "           : "") +
-    (updateAt            ? "updateAt            = :updateAt "              : "") ;
-
+  var phoneNumber = event.pathParameters.phoneNumber;
   var payloads = {
-    TableName: "appointments",
+    TableName: "messages",
     Key: {
-        "phoneNumber": phoneNumber
-    },
-    UpdateExpression: dbUpdateExpression,
-    ExpressionAttributeValues: dbAttributeValue,
-    ReturnValues:"UPDATED_NEW"
+      "phoneNumber": phoneNumber
+    }
   }
-
-  dynamo.update(payloads, function(err, data) {
+  // function to delete profile in dynamodb
+  dynamo.delete(payloads, function(err, data) {
     if (err) {
 
-      console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
+      console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
       var response = {
         statusCode: 400,
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          "message": "Error in appointment"
+          "message": "Error in deleting message"
         })
       };
       callback(null, response);
@@ -552,63 +464,36 @@ module.exports.updateConsumerAppointment = function(event, context, callback){
       };
       callback(null, response);
 
+
     }
 
   });
-
 }
 
-// function to update appointments from number ( business customer )
-module.exports.updateBusinessAppointment = function(event, context, callback){
+// function to delete messages from number ( business customer )
+module.exports.deleteBusinessMessage = function(event, context, callback) {
 
-  var phoneNumber         = event.pathParameters.phoneNumber;
-  var idProperty          = event.pathParameters.idProperty;
-
-  var body                = JSON.parse(event.body);
-
-  var phoneTo             = body.phoneTo,
-      appointmentDateTime = moment().toISOString(),
-      callStatus          = body.callStatus,
-      updateAt            = moment().toISOString();
-
-
-  // object to map to the db attribute value
-  var dbAttributeValue    = {
-    ":phoneTo"             : phoneTo,
-    ":appointmentDateTime" : appointmentDateTime,
-    ":callStatus"          : callStatus,
-    ":updateAt"            : updateAt
-  };
-
-  // creating dynamic query string to map the Attribute values
-  var dbUpdateExpression  = "set "                                               +
-    (phoneTo             ? "phoneTo             = :phoneTo, "              : "") +
-    (appointmentDateTime ? "appointmentDateTime = :appointmentDateTime, "  : "") +
-    (callStatus          ? "callStatus          = :callStatus, "           : "") +
-    (updateAt            ? "updateAt            = :updateAt "              : "") ;
-
+  var phoneNumber = event.pathParameters.phoneNumber;
+  var idPropertyCustomer = event.pathParameters.idProperty;
   var payloads = {
-    TableName: "appointments",
+    TableName: "messages",
     Key: {
-        "phoneNumber": phoneNumber,
-        "idProperty": idProperty
-    },
-    UpdateExpression: dbUpdateExpression,
-    ExpressionAttributeValues: dbAttributeValue,
-    ReturnValues:"UPDATED_NEW"
+      "phoneNumber": phoneNumber,
+      "idPropertyCustomer": idPropertyCustomer
+    }
   }
-  
-  dynamo.update(payloads, function(err, data) {
+  // function to delete profile in dynamodb
+  dynamo.delete(payloads, function(err, data) {
     if (err) {
 
-      console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
+      console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
       var response = {
         statusCode: 400,
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          "message": "Error in appointment"
+          "message": "Error in deleting message"
         })
       };
       callback(null, response);
@@ -626,8 +511,8 @@ module.exports.updateBusinessAppointment = function(event, context, callback){
       };
       callback(null, response);
 
+
     }
 
   });
-
 }
