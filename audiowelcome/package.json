@@ -1,7 +1,7 @@
 {
-  "name": "appointments",
+  "name": "audiowelcome",
   "version": "1.0.0",
-  "description": "appointments crud",
+  "description": "upload a file to s3 and data to dynamo db",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,9 +10,14 @@
   "license": "ISC",
   "dependencies": {
     "aws-sdk": "^2.126.0",
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "express-on-serverless": "^0.1.1",
     "file-type": "^7.0.1",
     "is-e164-phone-number": "^1.0.0",
     "moment": "^2.18.1",
+    "multer": "^1.3.0",
+    "multer-s3": "^2.7.0",
     "uuid": "^3.1.0"
   }
 }
