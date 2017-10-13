@@ -12,7 +12,7 @@ exports.handler = function(event, context, callback) {
 
     case 'GET':
 
-      getWelcomeAudio(event, context, callback);
+      getAppointmentAudio(event, context, callback);
       //defaultFunctionCall(event, context, callback);
       break;
 
@@ -30,7 +30,7 @@ exports.handler = function(event, context, callback) {
     case 'DELETE':
 
       //controller.deleteProfile(event, context, callback);
-      deleteWelcomeAudio(event, context, callback);
+      deleteAppointmentAudio(event, context, callback);
       break;
 
     default:
@@ -61,7 +61,7 @@ function s3Upload(event, context, callback) {
   let fileName = uuid();
 
   let params = {
-    Bucket: 'audiostorebucket/welcome',
+    Bucket: 'audiostorebucket/appointment',
     Key: fileName + '.' + audioFileExt,
     Body: audioFile
   }
@@ -83,21 +83,20 @@ function s3Upload(event, context, callback) {
 
     } else {
 
-      var uriAudioWelcome = data.Location;
+      var uriAudioAppointment = data.Location;
 
       var payloads = {
         TableName: "profile",
         Key: {
           "phoneNumber": phoneNumber
         },
-        UpdateExpression: "set uriAudioWelcome = :uriAudioWelcome, dateTimeUpdated = :dtU",
+        UpdateExpression: "set uriAudioAppointment = :uriAudioAppointment, dateTimeUpdated = :dtU",
         ExpressionAttributeValues: {
-          ":uriAudioWelcome": uriAudioWelcome,
+          ":uriAudioAppointment": uriAudioAppointment,
           ":dtU": moment().toISOString()
         },
         ReturnValues: "UPDATED_NEW"
       };
-      console.log(payloads)
 
       dynamo.update(payloads, function(err, data) {
         if (err) {
@@ -123,7 +122,7 @@ function s3Upload(event, context, callback) {
             },
             body: JSON.stringify({
               message: "Ok",
-              uriAudioWelcome: uriAudioWelcome
+              uriAudioAppointment: uriAudioAppointment
             })
           };
           callback(null, response);
@@ -139,7 +138,7 @@ function s3Upload(event, context, callback) {
 
 
 
-function getWelcomeAudio (event,context,callback){
+function getAppointmentAudio (event,context,callback){
 
   const AWS = require('aws-sdk');
   const dynamo = new AWS.DynamoDB.DocumentClient();
@@ -185,7 +184,7 @@ function getWelcomeAudio (event,context,callback){
 
 
               } else {
-                //res.status(200).json({code:200,Description :"OK" ,uriAudioWelcome:data.Items[0].uriAudioWelcome});
+                //res.status(200).json({code:200,Description :"OK" ,uriAudioAppointment:data.Items[0].uriAudioAppointment});
                 var response = {
                   statusCode: 200,
                   headers: {
@@ -193,7 +192,7 @@ function getWelcomeAudio (event,context,callback){
                   },
                   body: JSON.stringify({
                     message: "Ok",
-                    uriAudioWelcome:data.Items[0].uriAudioWelcome
+                    uriAudioAppointment:data.Items[0].uriAudioAppointment
                   })
                 };
                 callback(null, response);
@@ -205,7 +204,7 @@ function getWelcomeAudio (event,context,callback){
 
 }
 
-function deleteWelcomeAudio(event,context,callback) {
+function deleteAppointmentAudio(event,context,callback) {
 
   var phoneNumber = event.phoneNumber.toString();
 
@@ -238,7 +237,7 @@ function deleteWelcomeAudio(event,context,callback) {
 
                 } else {
 
-                  if (!data.Items[0].uriAudioWelcome) {
+                  if (!data.Items[0].uriAudioAppointment) {
                     //res.status(400).send({code: 400 , message : "No audio welcome was found"});
                     var response = {
                       statusCode: 400,
@@ -254,11 +253,11 @@ function deleteWelcomeAudio(event,context,callback) {
                   } else {
 
                     updateProfileAfterDelete(event,context,callback);
-                    var uriAudioWelcome = data.Items[0].uriAudioWelcome;
+                    var uriAudioAppointment = data.Items[0].uriAudioAppointment;
                       // getting the file name from a url
-                    var file = uriAudioWelcome.split('/')[4];
+                    var file = uriAudioAppointment.split('/')[4];
                     var params = {
-                        Bucket: "audiostorebucket/welcome",
+                        Bucket: "audiostorebucket/appointment",
                         Key: file
                        };
 
@@ -285,7 +284,7 @@ function deleteWelcomeAudio(event,context,callback) {
                       Key:{
                           "phoneNumber":phoneNumber
                       },
-                      UpdateExpression :"REMOVE uriAudioWelcome",
+                      UpdateExpression :"REMOVE uriAudioAppointment",
                       ReturnValues:"UPDATED_NEW"
   };
 

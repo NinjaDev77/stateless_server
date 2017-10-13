@@ -12,7 +12,7 @@ exports.handler = function(event, context, callback) {
 
     case 'GET':
 
-      getWelcomeAudio(event, context, callback);
+      getPropertyAudio(event, context, callback);
       //defaultFunctionCall(event, context, callback);
       break;
 
@@ -30,7 +30,7 @@ exports.handler = function(event, context, callback) {
     case 'DELETE':
 
       //controller.deleteProfile(event, context, callback);
-      deleteWelcomeAudio(event, context, callback);
+      deletePropertyAudio(event, context, callback);
       break;
 
     default:
@@ -54,14 +54,15 @@ function defaultFunctionCall(event, context, callback) {
 
 function s3Upload(event, context, callback) {
 
-  let phoneNumber = event.phoneNumber.toString();
+  let phoneNumber = event.phoneNumber;
+  let idProperty  = event.idProperty ;
   let audioFileInBase64 = event.body.audioFile;
   let audioFileExt = event.body.audioFileExt;
   let audioFile = new Buffer(audioFileInBase64, 'base64');
   let fileName = uuid();
 
   let params = {
-    Bucket: 'audiostorebucket/welcome',
+    Bucket: 'audiostorebucket/property',
     Key: fileName + '.' + audioFileExt,
     Body: audioFile
   }
@@ -83,28 +84,31 @@ function s3Upload(event, context, callback) {
 
     } else {
 
-      var uriAudioWelcome = data.Location;
+      var uriAudioProperty = data.Location;
 
       var payloads = {
-        TableName: "profile",
+        TableName: "property",
         Key: {
-          "phoneNumber": phoneNumber
+          "phoneNumber": phoneNumber,
+          "idProperty" : idProperty
         },
-        UpdateExpression: "set uriAudioWelcome = :uriAudioWelcome, dateTimeUpdated = :dtU",
+        ConditionExpression:"phoneNumber = :phoneNumber and idProperty = :idProperty",
+        UpdateExpression: "set uriAudioProperty = :uriAudioProperty, dateTimeUpdated = :dtU",
         ExpressionAttributeValues: {
-          ":uriAudioWelcome": uriAudioWelcome,
-          ":dtU": moment().toISOString()
+          ":uriAudioProperty": uriAudioProperty,
+          ":dtU": moment().toISOString(),
+          ":phoneNumber" : phoneNumber,
+          ":idProperty"  : idProperty
         },
         ReturnValues: "UPDATED_NEW"
       };
-      console.log(payloads)
 
       dynamo.update(payloads, function(err, data) {
         if (err) {
 
           console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
           var response = {
-            statusCode: 500,
+            statusCode: 404,
             headers: {
               "Content-Type": "application/json"
             },
@@ -123,7 +127,7 @@ function s3Upload(event, context, callback) {
             },
             body: JSON.stringify({
               message: "Ok",
-              uriAudioWelcome: uriAudioWelcome
+              uriAudioProperty: uriAudioProperty
             })
           };
           callback(null, response);
@@ -139,25 +143,25 @@ function s3Upload(event, context, callback) {
 
 
 
-function getWelcomeAudio (event,context,callback){
+function getPropertyAudio (event,context,callback){
 
-  const AWS = require('aws-sdk');
-  const dynamo = new AWS.DynamoDB.DocumentClient();
-
-  var phoneNumber = event.phoneNumber.toString();
+  var phoneNumber = event.phoneNumber;
+  var idProperty  = event.idProperty;
   var params        = {
-                        TableName: "profile",
-                        KeyConditionExpression: "phoneNumber = :phn",
+                        TableName: "property",
+                        KeyConditionExpression: "phoneNumber = :phn and idProperty = :idProp",
                         ExpressionAttributeValues: {
-                            ":phn": phoneNumber
+                            ":phn": phoneNumber,
+                            ":idProp" :idProperty
                         }
   }
+  //return context.succeed(params);
   dynamo.query(params, function(err, data) {
       if (err) {
 
           console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
           var response = {
-            statusCode: 400,
+            statusCode: 500,
             headers: {
               "Content-Type": "application/json"
             },
@@ -178,14 +182,14 @@ function getWelcomeAudio (event,context,callback){
                     "Content-Type": "application/json"
                   },
                   body: JSON.stringify({
-                    message: "No Phone Number Found !"
+                    message: "Not Found "
                   })
                 };
                 callback(null, response);
 
 
               } else {
-                //res.status(200).json({code:200,Description :"OK" ,uriAudioWelcome:data.Items[0].uriAudioWelcome});
+                //res.status(200).json({code:200,Description :"OK" ,uriAudioAppointment:data.Items[0].uriAudioAppointment});
                 var response = {
                   statusCode: 200,
                   headers: {
@@ -193,7 +197,7 @@ function getWelcomeAudio (event,context,callback){
                   },
                   body: JSON.stringify({
                     message: "Ok",
-                    uriAudioWelcome:data.Items[0].uriAudioWelcome
+                    uriAudioProperty:data.Items[0].uriAudioProperty
                   })
                 };
                 callback(null, response);
@@ -205,18 +209,20 @@ function getWelcomeAudio (event,context,callback){
 
 }
 
-function deleteWelcomeAudio(event,context,callback) {
+function deletePropertyAudio(event,context,callback) {
 
-  var phoneNumber = event.phoneNumber.toString();
+  var phoneNumber = event.phoneNumber ;
+  var idProperty = event.idProperty ;
 
-  var getParams        = {
-                        TableName: "profile",
-                        KeyConditionExpression: "phoneNumber = :phn",
+  var params        = {
+                        TableName: "property",
+                        KeyConditionExpression: "phoneNumber = :phn and idProperty = :idProp",
                         ExpressionAttributeValues: {
-                            ":phn": phoneNumber
+                            ":phn": phoneNumber,
+                            ":idProp" :idProperty
                         }
   }
-    dynamo.query(getParams,function(err, data) {
+    dynamo.query(params,function(err, data) {
         if (err) {
 
             console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
@@ -231,14 +237,14 @@ function deleteWelcomeAudio(event,context,callback) {
                       "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                      message: "No Phone Number Found !"
+                      message: "Not Found !"
                     })
                   };
                   callback(null, response);
 
                 } else {
 
-                  if (!data.Items[0].uriAudioWelcome) {
+                  if (!data.Items[0].uriAudioProperty) {
                     //res.status(400).send({code: 400 , message : "No audio welcome was found"});
                     var response = {
                       statusCode: 400,
@@ -246,19 +252,19 @@ function deleteWelcomeAudio(event,context,callback) {
                         "Content-Type": "application/json"
                       },
                       body: JSON.stringify({
-                        message: "No audio welcome was found"
+                        message: "No audio was found"
                       })
                     };
                     callback(null, response);
 
                   } else {
 
-                    updateProfileAfterDelete(event,context,callback);
-                    var uriAudioWelcome = data.Items[0].uriAudioWelcome;
+                    updatePropertyAfterDelete(event,context,callback);
+                    var uriAudioProperty = data.Items[0].uriAudioProperty;
                       // getting the file name from a url
-                    var file = uriAudioWelcome.split('/')[4];
+                    var file = uriAudioProperty.split('/')[4];
                     var params = {
-                        Bucket: "audiostorebucket/welcome",
+                        Bucket: "audiostorebucket/property",
                         Key: file
                        };
 
@@ -277,18 +283,25 @@ function deleteWelcomeAudio(event,context,callback) {
     });
  }
 
- function updateProfileAfterDelete (event,context,callback){
+ function updatePropertyAfterDelete (event,context,callback){
 
-  var phoneNumber = event.phoneNumber.toString();
+  var phoneNumber = event.phoneNumber;
+  var idProperty  = event.idProperty;
   var params      = {
-                      TableName: "profile",
+                      TableName: "property",
                       Key:{
-                          "phoneNumber":phoneNumber
+                          "phoneNumber":phoneNumber,
+                          "idProperty" :idProperty
                       },
-                      UpdateExpression :"REMOVE uriAudioWelcome",
+                      ConditionExpression:"phoneNumber = :phNo and idProperty = :id" ,
+                      ExpressionAttributeValues:{
+                        ":phNo" : phoneNumber,
+                        ":id" : idProperty
+                      },
+                      UpdateExpression :"remove uriAudioProperty",
                       ReturnValues:"UPDATED_NEW"
   };
-
+  //console.log("update" , params)
   dynamo.update(params, function(err, data) {
     if (err) {
 
@@ -300,7 +313,7 @@ function deleteWelcomeAudio(event,context,callback) {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            message: err.message
+            message: "Something Went Wrong !"
           })
         };
         callback(null, response);
