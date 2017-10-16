@@ -14,6 +14,6 @@
 // s3 upload body template
  {
  "body" :$input.json('$'),
- "phoneNumber" : $input.params('phoneNumber'),
+ "phoneNumber" : "$input.params('phoneNumber')",
  "httpMethod" : "$context.httpMethod"
  }

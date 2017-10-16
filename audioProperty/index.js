@@ -13,7 +13,6 @@ exports.handler = function(event, context, callback) {
     case 'GET':
 
     getPropertyAudio(event, context, callback);
-    //defaultFunctionCall(event, context, callback);
     break;
 
     case 'POST':
@@ -23,13 +22,11 @@ exports.handler = function(event, context, callback) {
 
     case 'PUT':
 
-    //controller.updateProfile(event, context, callback);
     s3Upload(event, context, callback);
     break;
 
     case 'DELETE':
 
-    //controller.deleteProfile(event, context, callback);
     deletePropertyAudio(event, context, callback);
     break;
 
