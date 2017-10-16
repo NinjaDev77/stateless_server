@@ -259,6 +259,7 @@ module.exports.updateProfile = function(event, context, callback) {
 
   // object to map to the db attribute value
   let dbAttributeValue = {
+    ":phNo"     : phoneNumber,
     ":cusId"    : customerID,
     ":cusType"  : customerType,
     ":cusEmail" : customerEmail,
@@ -286,11 +287,12 @@ module.exports.updateProfile = function(event, context, callback) {
     Key: {
       "phoneNumber": phoneNumber
     },
+    conditionExpession:"phoneNumber = :phNo",
     UpdateExpression: dbUpdateExpression,
     ExpressionAttributeValues: dbAttributeValue,
     ReturnValues: "UPDATED_NEW"
   };
-  console.log(payloads);
+  //console.log(payloads);
   dynamo.update(payloads, function(err, data) {
     if (err) {
 
@@ -301,7 +303,7 @@ module.exports.updateProfile = function(event, context, callback) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          "message": "Error in profile"
+          "message": "Whoops Something Went Wrong !"
         })
       };
       callback(null, response);
