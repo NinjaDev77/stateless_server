@@ -40,7 +40,7 @@ exports.handler = function(event, context, callback) {
 
 function defaultFunctionCall(event, context, callback) {
   var response = {
-    statusCode:200,
+    statusCode:400,
     message: "Bad Request"
   }
   callback(null, response);
@@ -52,83 +52,81 @@ function s3Upload(event, context, callback) {
   let phoneNumber = event.phoneNumber.toString();
   let audioFileInBase64 = event.body.audioFile;
   let audioFileExt = event.body.audioFileExt;
-  let audioFile = new Buffer(audioFileInBase64, 'base64');
-  let fileName = uuid();
+  if (audioFileExt === null || audioFileExt === undefined) {
 
-  let params = {
-    Bucket: 'audiostorebucket/welcome',
-    Key: fileName + '.' + audioFileExt,
-    Body: audioFile
-  }
+    return callback(null,{statusCode : 400 , message : " audioFileExt params is missing !"});
 
-  s3.upload(params, function(err, data) {
-    if (err) {
-      return console.log(err);
-      var response = {
-        statusCode: 500,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
+  } else if (audioFileInBase64 === null || audioFileInBase64 === undefined ) {
+
+    return callback(null,{statusCode : 400 , message : " audioFile params is missing !"});
+
+  } else {
+    
+    let audioFile = new Buffer(audioFileInBase64, 'base64');
+    let fileName = uuid();
+
+    let params = {
+      Bucket: 'audiostorebucket/welcome',
+      Key: fileName + '.' + audioFileExt,
+      Body: audioFile
+    }
+
+    s3.upload(params, function(err, data) {
+      if (err) {
+        return console.log(err);
+        var response = {
+          statusCode: 500,
           message: "Whoops Something Went Wrong !",
-        })
-      };
-      callback(null, response);
+        };
+        callback(null, response);
 
 
-    } else {
+      } else {
 
-      var uriAudioWelcome = data.Location;
+        var uriAudioWelcome = data.Location;
 
-      var payloads = {
-        TableName: "profile",
-        Key: {
-          "phoneNumber": phoneNumber
-        },
-        UpdateExpression: "set uriAudioWelcome = :uriAudioWelcome, dateTimeUpdated = :dtU",
-        ExpressionAttributeValues: {
-          ":uriAudioWelcome": uriAudioWelcome,
-          ":dtU": moment().toISOString()
-        },
-        ReturnValues: "UPDATED_NEW"
-      };
-      console.log(payloads)
+        var payloads = {
+          TableName: "profile",
+          Key: {
+            "phoneNumber": phoneNumber
+          },
+          UpdateExpression: "set uriAudioWelcome = :uriAudioWelcome, dateTimeUpdated = :dtU",
+          ExpressionAttributeValues: {
+            ":uriAudioWelcome": uriAudioWelcome,
+            ":dtU": moment().toISOString()
+          },
+          ReturnValues: "UPDATED_NEW"
+        };
+        console.log(payloads)
 
-      dynamo.update(payloads, function(err, data) {
-        if (err) {
+        dynamo.update(payloads, function(err, data) {
+          if (err) {
 
-          console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
-          var response = {
-            statusCode: 500,
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              message: "Whoops Something Went Wrong !",
-            })
-          };
-          callback(null, response);
+            console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
+            var response = {
+              statusCode: 200,
+              message: "Whoops Something Went Wrong !"
 
-        } else {
-          //console.log("DeleteItem succeeded:", JSON.stringify(data, null, 2));
-          var response = {
-            statusCode: 500,
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
+            };
+            callback(null, response);
+
+          } else {
+            //console.log("DeleteItem succeeded:", JSON.stringify(data, null, 2));
+            var response = {
+              statusCode: 200,
               message: "Ok",
               uriAudioWelcome: uriAudioWelcome
-            })
-          };
-          callback(null, response);
+            };
+            callback(null, response);
 
-        }
+          }
 
-      });
+        });
 
-    }
-  });
+      }
+    });
+
+  }
 
 }
 
