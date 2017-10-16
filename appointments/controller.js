@@ -77,7 +77,7 @@ function isIdPropertyExist(phoneNumber, idProperty){
 }
 
 // function to get appointments from number ( consumer customer )
-module.exports.getConsumerAppointment = function(event, context, callback){
+module.exports.getConsumerAppointment = function(event, context, callback) {
   
   var phoneNumber = event.pathParameters.phoneNumber;
 
@@ -144,22 +144,34 @@ module.exports.getConsumerAppointment = function(event, context, callback){
 };
 
 // function to get appointments from number ( business customer )
-module.exports.getBusinessAppointment = function(event, context, callback){
+module.exports.getBusinessAppointment = function(event, context, callback) {
   
   var phoneNumber = event.pathParameters.phoneNumber;
   var idProperty  = event.pathParameters.idProperty;
 
   var payload = {
-    TableName: "appointments",
-    KeyConditionExpression: "phoneNumber = :phn AND idProperty = :id",
-    ExpressionAttributeValues: {
-      ":phn": phoneNumber,
-      ":id": idProperty
-    }
-  };
+        TableName: 'appointments',
+        Limit: 100,
+        Select: 'ALL_ATTRIBUTES',
+        ReturnConsumedCapacity: 'TOTAL',
+        FilterExpression: '#phoneNumber = :phoneNumber and #idProperty = :idProperty' ,
+        ExpressionAttributeNames: {
+            '#phoneNumber': 'phoneNumber',
+            '#idProperty' : 'idProperty'
+        },
+        ExpressionAttributeValues: {
+            ':phoneNumber': {
+                'S': phoneNumber
+
+            },
+            ":idProperty":{
+                'S' : idProperty
+            }
+        },
+    };
 
   // function to get appointment in dynamodb with the above params
-  dynamo.query(payload, function(err, data) {
+  dynamo.scan(payload, function(err, data) {
     
     if (err) {
 
@@ -213,13 +225,15 @@ module.exports.getBusinessAppointment = function(event, context, callback){
 };
 
 // function to store appointments from number ( consumer customer )
-module.exports.storeConsumerAppointment = function(event, context, callback){
+module.exports.storeConsumerAppointment = function(event, context, callback) {
 
   var body = JSON.parse(event.body);
-  var phoneNumber = event.pathParameters.phoneNumber;
-  var ifNumbervalid = isE164PhoneNumber('+' + phoneNumber);
 
-  if (!ifNumbervalid) {
+  var phoneNumber = event.pathParameters.phoneNumber;
+
+  var isNumberValid = isE164PhoneNumber('+' + phoneNumber);
+
+  if (!isNumberValid) {
 
     var response = {
       statusCode: 400,
@@ -237,12 +251,12 @@ module.exports.storeConsumerAppointment = function(event, context, callback){
 
     // isPhoneNumberExist(phoneNumber).then(function(){
 
-      var idProperty          = body.idProperty,
-          phoneTo             = body.phoneTo,
-          appointmentDateTime = moment().toISOString(),
+      var phoneTo             = body.phoneTo,
+          appointmentId       = uuid(),
+          appointmentDateTime = moment(body.appointmentDateTime).toISOString(),
           callStatus          = body.callStatus,
-          createAt            = moment().toISOString(),
-          updateAt            = moment().toISOString();
+          createdAt           = moment().toISOString(),
+          updatedAt           = moment().toISOString();
 
       
       if( phoneTo !== null || phoneTo !== undefined || phoneTo !== ''){
@@ -265,7 +279,7 @@ module.exports.storeConsumerAppointment = function(event, context, callback){
 
       }
 
-      if (idProperty === null || idProperty === undefined || phoneTo === null || phoneTo === undefined || callStatus === null || callStatus === undefined || appointmentDateTime === null || appointmentDateTime === undefined){ 
+      if (appointmentId === null || appointmentId === undefined || phoneTo === null || phoneTo === undefined || callStatus === null || callStatus === undefined || appointmentDateTime === null || appointmentDateTime === undefined){
         
         var response = {
           statusCode: 400,
@@ -283,18 +297,17 @@ module.exports.storeConsumerAppointment = function(event, context, callback){
         var payload = {
           TableName: 'appointments',
           Item: { // a map of attribute name to AttributeValue
-
             "phoneNumber": phoneNumber,
-            "idProperty": idProperty,
+            "appointmentId": appointmentId,
             "phoneTo": phoneTo,
             "appointmentDateTime": appointmentDateTime,
             "callStatus": callStatus,
-            "createAt": createAt,
-            "updateAt": updateAt
+            "createdAt": createdAt,
+            "updatedAt": updatedAt
           },
           ReturnValues: 'NONE', // optional (NONE | ALL_OLD)
           ReturnConsumedCapacity: 'NONE', // optional (NONE | TOTAL | INDEXES)
-          ReturnItemCollectionMetrics: 'NONE', // optional (NONE | SIZE)
+          ReturnItemCollectionMetrics: 'NONE' // optional (NONE | SIZE)
         };
         
         //method to put into the dynamodb
@@ -346,17 +359,18 @@ module.exports.storeConsumerAppointment = function(event, context, callback){
 
   }
 
-}
+};
 
 // function to store appointments from number ( business customer )
-module.exports.storeBusinessAppointment = function(event, context, callback){
+module.exports.storeBusinessAppointment = function(event, context, callback) {
 
   var body = JSON.parse(event.body);
   var phoneNumber = event.pathParameters.phoneNumber;
   var idProperty = event.pathParameters.idProperty;
 
-  var ifNumbervalid = isE164PhoneNumber('+' + phoneNumber)
-  if (!ifNumbervalid) {
+  var isNumberValid = isE164PhoneNumber('+' + phoneNumber);
+
+  if (!isNumberValid) {
 
     var response = {
       statusCode: 400,
@@ -375,10 +389,11 @@ module.exports.storeBusinessAppointment = function(event, context, callback){
     // isIdPropertyExist(phoneNumber, idProperty).then(function(){
 
       var phoneTo             = body.phoneTo,
-          appointmentDateTime = moment().toISOString(),
+          appointmentId       = uuid(),
+          appointmentDateTime = moment(body.appointmentDateTime).toISOString(),
           callStatus          = body.callStatus,
-          createAt            = moment().toISOString(),
-          updateAt            = moment().toISOString();
+          createdAt           = moment().toISOString(),
+          updatedAt           = moment().toISOString();
 
       if( phoneTo !== null && phoneTo !== undefined && phoneTo !== ''){
         
@@ -418,14 +433,14 @@ module.exports.storeBusinessAppointment = function(event, context, callback){
         var payload = {
           TableName: 'appointments',
           Item: { // a map of attribute name to AttributeValue
-
             "phoneNumber": phoneNumber,
+            "appointmentId": appointmentId,
             "idProperty": idProperty,
             "phoneTo": phoneTo,
             "appointmentDateTime": appointmentDateTime,
             "callStatus": callStatus,
-            "createAt": createAt,
-            "updateAt": updateAt
+            "createdAt": createdAt,
+            "updatedAt": updatedAt
           },
           ReturnValues: 'NONE', // optional (NONE | ALL_OLD)
           ReturnConsumedCapacity: 'NONE', // optional (NONE | TOTAL | INDEXES)
@@ -482,48 +497,47 @@ module.exports.storeBusinessAppointment = function(event, context, callback){
     // })
 
   }
-}
+};
 
 // function to update appointments from number ( consumer customer )
-module.exports.updateConsumerAppointment = function(event, context, callback){
+module.exports.updateConsumerAppointment = function(event, context, callback) {
 
   var phoneNumber         = event.pathParameters.phoneNumber;
   var body                = JSON.parse(event.body);
 
-  var idProperty          = body.idProperty,
-      phoneTo             = body.phoneTo,
-      appointmentDateTime = moment().toISOString(),
+  var phoneTo             = body.phoneTo,
+      appointmentId       = body.appointmentId,
+      appointmentDateTime = moment(body.appointmentDateTime).toISOString(),
       callStatus          = body.callStatus,
-      updateAt            = moment().toISOString();
+      updatedAt           = moment().toISOString();
 
 
   // object to map to the db attribute value
   var dbAttributeValue    = {
-    ":idProperty"          : idProperty,
     ":phoneTo"             : phoneTo,
     ":appointmentDateTime" : appointmentDateTime,
     ":callStatus"          : callStatus,
-    ":updateAt"            : updateAt
+    ":updatedAt"           : updatedAt
   };
 
   // creating dynamic query string to map the Attribute values
   var dbUpdateExpression = "set "                                                +
-    (idProperty          ? "idProperty          = :idProperty, "           : "") +
     (phoneTo             ? "phoneTo             = :phoneTo, "              : "") +
     (appointmentDateTime ? "appointmentDateTime = :appointmentDateTime, "  : "") +
-    (callStatus          ? "callStatus          = :callStatus, "           : "") +
-    (updateAt            ? "updateAt            = :updateAt "              : "") ;
+    (callStatus==false || callStatus==true ? "callStatus = :callStatus, "  : "") +
+    (updatedAt           ? "updatedAt           = :updatedAt "             : "") ;
 
   var payloads = {
     TableName: "appointments",
     Key: {
-        "phoneNumber": phoneNumber
+        "phoneNumber": phoneNumber,
+        "appointmentId": appointmentId
     },
     UpdateExpression: dbUpdateExpression,
     ExpressionAttributeValues: dbAttributeValue,
     ReturnValues:"UPDATED_NEW"
-  }
-
+  };
+  console.log('Payload', payloads);
   dynamo.update(payloads, function(err, data) {
     if (err) {
 
@@ -556,10 +570,10 @@ module.exports.updateConsumerAppointment = function(event, context, callback){
 
   });
 
-}
+};
 
 // function to update appointments from number ( business customer )
-module.exports.updateBusinessAppointment = function(event, context, callback){
+module.exports.updateBusinessAppointment = function(event, context, callback) {
 
   var phoneNumber         = event.pathParameters.phoneNumber;
   var idProperty          = event.pathParameters.idProperty;
@@ -567,9 +581,10 @@ module.exports.updateBusinessAppointment = function(event, context, callback){
   var body                = JSON.parse(event.body);
 
   var phoneTo             = body.phoneTo,
-      appointmentDateTime = moment().toISOString(),
+      appointmentDateTime = moment(body.appointmentDateTime).toISOString(),
       callStatus          = body.callStatus,
-      updateAt            = moment().toISOString();
+      appointmentId       = body.appointmentId,
+      updatedAt           = moment().toISOString();
 
 
   // object to map to the db attribute value
@@ -577,21 +592,21 @@ module.exports.updateBusinessAppointment = function(event, context, callback){
     ":phoneTo"             : phoneTo,
     ":appointmentDateTime" : appointmentDateTime,
     ":callStatus"          : callStatus,
-    ":updateAt"            : updateAt
+    ":updatedAt"           : updatedAt
   };
 
   // creating dynamic query string to map the Attribute values
   var dbUpdateExpression  = "set "                                               +
     (phoneTo             ? "phoneTo             = :phoneTo, "              : "") +
     (appointmentDateTime ? "appointmentDateTime = :appointmentDateTime, "  : "") +
-    (callStatus          ? "callStatus          = :callStatus, "           : "") +
-    (updateAt            ? "updateAt            = :updateAt "              : "") ;
+    (callStatus==false || callStatus==true ? "callStatus = :callStatus, "  : "") +
+    (updatedAt           ? "updatedAt           = :updatedAt "             : "") ;
 
   var payloads = {
     TableName: "appointments",
     Key: {
         "phoneNumber": phoneNumber,
-        "idProperty": idProperty
+        "appointmentId": appointmentId
     },
     UpdateExpression: dbUpdateExpression,
     ExpressionAttributeValues: dbAttributeValue,
@@ -630,4 +645,4 @@ module.exports.updateBusinessAppointment = function(event, context, callback){
 
   });
 
-}
+};
