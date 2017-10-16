@@ -224,6 +224,7 @@ module.exports.storeConsumerMessage = function(event, context, callback) {
     var body = JSON.parse(event.body);
     var phoneNumber = event.pathParameters.phoneNumber;
     var messageId = uuid();
+    var createdAt = moment().toISOString();
 
     var ifNumbervalid = isE164PhoneNumber('+' + phoneNumber);
 
@@ -247,7 +248,7 @@ module.exports.storeConsumerMessage = function(event, context, callback) {
 
         var urlRecording = body.urlRecording;
 
-        if (urlRecording === null || urlRecording === undefined){
+        if ( urlRecording === null || urlRecording === undefined || createdAt === null || createdAt === undefined ){
 
             var response = {
                 statusCode: 400,
@@ -267,7 +268,8 @@ module.exports.storeConsumerMessage = function(event, context, callback) {
                 Item: { // a map of attribute name to AttributeValue
                     "phoneNumber": phoneNumber,
                     "messageId": messageId,
-                    "urlRecording": urlRecording
+                    "urlRecording": urlRecording,
+                    "createdAt": createdAt
                 },
                 ReturnValues: 'NONE', // optional (NONE | ALL_OLD)
                 ReturnConsumedCapacity: 'NONE', // optional (NONE | TOTAL | INDEXES)
@@ -331,6 +333,7 @@ module.exports.storeBusinessMessage = function(event, context, callback) {
     var body = JSON.parse(event.body);
     var phoneNumber = event.pathParameters.phoneNumber;
     var messageId = uuid();
+    var createdAt = moment().toISOString();
     var idPropertyCustomer = event.pathParameters.idProperty;
 
     var ifNumbervalid = isE164PhoneNumber('+' + phoneNumber)
@@ -354,7 +357,7 @@ module.exports.storeBusinessMessage = function(event, context, callback) {
 
         var urlRecording = body.urlRecording;
 
-        if (urlRecording === null || urlRecording === undefined){
+        if (urlRecording === null || urlRecording === undefined || createdAt === null || createdAt === undefined ){
 
             var response = {
                 statusCode: 400,
@@ -375,7 +378,8 @@ module.exports.storeBusinessMessage = function(event, context, callback) {
                     "phoneNumber": phoneNumber,
                     "messageId": messageId,
                     "idPropertyCustomer": idPropertyCustomer,
-                    "urlRecording": urlRecording
+                    "urlRecording": urlRecording,
+                    "createdAt": createdAt
                 },
                 ReturnValues: 'NONE', // optional (NONE | ALL_OLD)
                 ReturnConsumedCapacity: 'NONE', // optional (NONE | TOTAL | INDEXES)
