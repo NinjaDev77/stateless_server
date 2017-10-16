@@ -89,7 +89,7 @@ module.exports.getConsumerMessage = function(event, context, callback) {
         }
     };
 
-    // function to get appointment in dynamodb with the above params
+    // function to get appointment in dynamo db with the above params
     dynamo.query(payload, function(err, data) {
 
         if (err) {
@@ -439,45 +439,103 @@ module.exports.storeBusinessMessage = function(event, context, callback) {
 module.exports.deleteConsumerMessage = function(event, context, callback) {
 
     var phoneNumber = event.pathParameters.phoneNumber;
-    var payloads = {
+
+    var getPayload = {
         TableName: "messages",
-        Key: {
-            "phoneNumber": phoneNumber
+        KeyConditionExpression: "phoneNumber = :phn",
+        ExpressionAttributeValues: {
+            ":phn": phoneNumber
         }
-    }
-    // function to delete profile in dynamodb
-    dynamo.delete(payloads, function(err, data) {
+    };
+
+    // function to get appointment in dynamo db with the above params
+    dynamo.query(getPayload, function(err, data) {
+
         if (err) {
 
-            console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
+            console.error(err);
             var response = {
                 statusCode: 400,
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    "message": "Error in deleting message"
+                    "message": "Error in getting message!"
                 })
             };
             callback(null, response);
 
         } else {
 
-            var response = {
-                statusCode: 200,
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    "message": "OK"
-                })
-            };
-            callback(null, response);
+            if (data.Items.length === 0) {
 
+                var response = {
+                    statusCode: 200,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "message": "No message was found!"
+                    })
+                };
+                callback(null, response);
+
+            } else {
+
+                var getResponse = data.Items;
+                var delCount = 0;
+
+                for( let i = 0; i < getResponse.length; i++ ) {
+                    let deletePayload = {
+                        TableName: "messages",
+                        Key: {
+                            "phoneNumber": phoneNumber,
+                            "messageId": getResponse[i].messageId
+                        }
+                    };
+
+                    // function to delete profile in dynamo db
+                    dynamo.delete(deletePayload, function(err, data) {
+                        if (err) {
+
+                            console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
+                            var response = {
+                                statusCode: 400,
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                    "message": "Error in deleting message"
+                                })
+                            };
+
+                        } else {
+                            delCount++;
+                            if(delCount == getResponse.length) {
+
+                                var response = {
+                                    statusCode: 200,
+                                    headers: {
+                                        "Content-Type": "application/json"
+                                    },
+                                    body: JSON.stringify({
+                                        "message": "OK"
+                                    })
+                                };
+                                callback(null, response);
+
+                            }
+                            console.log(delCount);
+                        }
+                    });
+                }
+
+            }
 
         }
 
     });
+
 };
 
 // function to delete messages from number ( business customer )
@@ -485,44 +543,109 @@ module.exports.deleteBusinessMessage = function(event, context, callback) {
 
     var phoneNumber = event.pathParameters.phoneNumber;
     var idPropertyCustomer = event.pathParameters.idProperty;
-    var payloads = {
-        TableName: "messages",
-        Key: {
-            "phoneNumber": phoneNumber,
-            "idPropertyCustomer": idPropertyCustomer
+
+
+    var getPayload = {
+        TableName: 'messages',
+        Select: 'ALL_ATTRIBUTES',
+        ReturnConsumedCapacity: 'TOTAL',
+        FilterExpression: '#phoneNumber = :phoneNumber and #idPropertyCustomer = :idPropertyCustomer' ,
+        ExpressionAttributeNames: {
+            '#phoneNumber': 'phoneNumber',
+            '#idPropertyCustomer' : 'idPropertyCustomer'
+        },
+        ExpressionAttributeValues: {
+            ':phoneNumber': phoneNumber,
+            ':idPropertyCustomer': idPropertyCustomer
         }
     };
-    // function to delete profile in dynamodb
-    dynamo.delete(payloads, function(err, data) {
+
+    // function to get appointment in dynamo db with the above params
+    dynamo.scan(getPayload, function(err, data) {
+
         if (err) {
 
-            console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
+            console.error(err);
             var response = {
                 statusCode: 400,
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    "message": "Error in deleting message"
+                    "message": "Error in getting message!"
                 })
             };
             callback(null, response);
 
         } else {
 
-            var response = {
-                statusCode: 200,
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    "message": "OK"
-                })
-            };
-            callback(null, response);
+            if (data.Items.length === 0) {
 
+                var response = {
+                    statusCode: 200,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "message": "No message was found!"
+                    })
+                };
+                callback(null, response);
+
+            } else {
+
+                var getResponse = data.Items;
+                var delCount = 0;
+
+                for( let i = 0; i < getResponse.length; i++ ) {
+                    let deletePayload = {
+                        TableName: "messages",
+                        Key: {
+                            "phoneNumber": phoneNumber,
+                            "messageId": getResponse[i].messageId
+                        }
+                    };
+
+                    // function to delete profile in dynamo db
+                    dynamo.delete(deletePayload, function(err, data) {
+                        if (err) {
+
+                            console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
+                            var response = {
+                                statusCode: 400,
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                    "message": "Error in deleting message"
+                                })
+                            };
+
+                        } else {
+                            delCount++;
+                            if(delCount == getResponse.length) {
+
+                                var response = {
+                                    statusCode: 200,
+                                    headers: {
+                                        "Content-Type": "application/json"
+                                    },
+                                    body: JSON.stringify({
+                                        "message": "OK"
+                                    })
+                                };
+                                callback(null, response);
+
+                            }
+                            console.log(delCount);
+                        }
+                    });
+                }
+
+            }
 
         }
 
     });
+
 };
