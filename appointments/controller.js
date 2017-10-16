@@ -8,7 +8,7 @@ const AWS = require('aws-sdk');
 
 const dynamo = new AWS.DynamoDB.DocumentClient();
 
-// function to check the existence of the provided phone number 
+// function to check the existence of the provided phone number
 function isPhoneNumberExist(phoneNumber){
 
   var payloads = {
@@ -18,7 +18,7 @@ function isPhoneNumberExist(phoneNumber){
       ":phn": phoneNumber
     }
   };
-  
+
   return new Promise (function(resolve, reject){
 
     dynamo.query(payloads, function(err, data) {
@@ -42,7 +42,7 @@ function isPhoneNumberExist(phoneNumber){
 
 }
 
-// function to check the existence of the provided phone number and id property 
+// function to check the existence of the provided phone number and id property
 function isIdPropertyExist(phoneNumber, idProperty){
 
   var payloads = {
@@ -78,7 +78,7 @@ function isIdPropertyExist(phoneNumber, idProperty){
 
 // function to get appointments from number ( consumer customer )
 module.exports.getConsumerAppointment = function(event, context, callback) {
-  
+
   var phoneNumber = event.pathParameters.phoneNumber;
 
   var payload = {
@@ -88,10 +88,10 @@ module.exports.getConsumerAppointment = function(event, context, callback) {
       ":phn": phoneNumber
     }
   };
-  
+
   // function to get appointment in dynamodb with the above params
   dynamo.query(payload, function(err, data) {
-    
+
     if (err) {
 
       console.error(err);
@@ -145,7 +145,7 @@ module.exports.getConsumerAppointment = function(event, context, callback) {
 
 // function to get appointments from number ( business customer )
 module.exports.getBusinessAppointment = function(event, context, callback) {
-  
+
   var phoneNumber = event.pathParameters.phoneNumber;
   var idProperty  = event.pathParameters.idProperty;
 
@@ -172,7 +172,7 @@ module.exports.getBusinessAppointment = function(event, context, callback) {
 
   // function to get appointment in dynamodb with the above params
   dynamo.scan(payload, function(err, data) {
-    
+
     if (err) {
 
       console.error(err);
@@ -258,9 +258,9 @@ module.exports.storeConsumerAppointment = function(event, context, callback) {
           createdAt           = moment().toISOString(),
           updatedAt           = moment().toISOString();
 
-      
+
       if( phoneTo !== null || phoneTo !== undefined || phoneTo !== ''){
-        
+
         if (!isE164PhoneNumber('+' + phoneTo)) {
 
           var response = {
@@ -280,7 +280,7 @@ module.exports.storeConsumerAppointment = function(event, context, callback) {
       }
 
       if (appointmentId === null || appointmentId === undefined || phoneTo === null || phoneTo === undefined || callStatus === null || callStatus === undefined || appointmentDateTime === null || appointmentDateTime === undefined){
-        
+
         var response = {
           statusCode: 400,
           headers: {
@@ -309,7 +309,7 @@ module.exports.storeConsumerAppointment = function(event, context, callback) {
           ReturnConsumedCapacity: 'NONE', // optional (NONE | TOTAL | INDEXES)
           ReturnItemCollectionMetrics: 'NONE' // optional (NONE | SIZE)
         };
-        
+
         //method to put into the dynamodb
         dynamo.put(payload, function(err, data) {
           if (err) {
@@ -396,7 +396,7 @@ module.exports.storeBusinessAppointment = function(event, context, callback) {
           updatedAt           = moment().toISOString();
 
       if( phoneTo !== null && phoneTo !== undefined && phoneTo !== ''){
-        
+
         if (!isE164PhoneNumber('+' + phoneTo)) {
 
           var response = {
@@ -415,8 +415,8 @@ module.exports.storeBusinessAppointment = function(event, context, callback) {
 
       }
 
-      if (phoneTo === null || phoneTo === undefined || callStatus === null || callStatus === undefined || appointmentDateTime === null || appointmentDateTime === undefined){ 
-        
+      if (phoneTo === null || phoneTo === undefined || callStatus === null || callStatus === undefined || appointmentDateTime === null || appointmentDateTime === undefined){
+
         var response = {
           statusCode: 400,
           headers: {
@@ -449,7 +449,7 @@ module.exports.storeBusinessAppointment = function(event, context, callback) {
 
         //method to put into the dynamodb
         dynamo.put(payload, function(err, data) {
-          
+
           if (err) {
 
             console.error(err); // an error occurred
@@ -612,7 +612,7 @@ module.exports.updateBusinessAppointment = function(event, context, callback) {
     ExpressionAttributeValues: dbAttributeValue,
     ReturnValues:"UPDATED_NEW"
   }
-  
+
   dynamo.update(payloads, function(err, data) {
     if (err) {
 
