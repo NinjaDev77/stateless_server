@@ -3,7 +3,6 @@
 const moment = require('moment');
 const uuid = require('uuid/v4');
 const isE164PhoneNumber = require('is-e164-phone-number');
-const doc = require('dynamodb-doc');
 const AWS = require('aws-sdk');
 
 
@@ -96,7 +95,7 @@ module.exports.createProfile = function(event, context, callback) {
 
   } else {
 
-    isPhoneNumberExit(phoneNumber).then(function(){
+    isPhoneNumberExist(phoneNumber).then(function(){
 
       var customerID          = body.customerID,
           customerType        = body.customerType,
@@ -119,7 +118,7 @@ module.exports.createProfile = function(event, context, callback) {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            "message": "Mandator Field is missing !"
+            "message": "Mandatory Field is missing !"
           })
         };
         callback(null, response);
@@ -244,117 +243,134 @@ module.exports.deleteProfile = function(event, context, callback) {
 // function to update profile
 module.exports.updateProfile = function(event, context, callback) {
 
-  let req                 = event;
-  let body                = JSON.parse(req.body);
-  let params              = req.pathParameters;
-  let phoneNumber         = event.pathParameters.phoneNumber;
-  let customerID          = body.customerID;
-  let customerType        = body.customerType;
-  let customerEmail       = body.customerEmail;
-  let customerMobile      = body.customerMobile;
-  let uriAudioWelcome     = body.uriAudioWelcome;
-  let uriAudioAppointment = body.uriAudioAppointment;
-  let routingActive       = (body.routingActive === true ? body.routingActive : undefined);
-  let routingPhone        = (body.routingActive === true ? body.routingPhone : undefined);
+  isPhoneNumberExist(event.pathParameters.phoneNumber).then(function(){
 
-  // object to map to the db attribute value
-  let dbAttributeValue = {
-    ":phNo"     : phoneNumber,
-    ":cusId"    : customerID,
-    ":cusType"  : customerType,
-    ":cusEmail" : customerEmail,
-    ":cusMobile": customerMobile,
-    ":uriAudWel": uriAudioWelcome,
-    ":uriAudApp": uriAudioAppointment,
-    ":routAct"  : routingActive,
-    ":routPhn"  : routingPhone,
-    ":dtU"      : moment().toISOString()
-  };
+    let req                 = event;
+    let body                = JSON.parse(req.body);
+    let params              = req.pathParameters;
+    let phoneNumber         = event.pathParameters.phoneNumber;
+    let customerID          = body.customerID;
+    let customerType        = body.customerType;
+    let customerEmail       = body.customerEmail;
+    let customerMobile      = body.customerMobile;
+    let uriAudioWelcome     = body.uriAudioWelcome;
+    let uriAudioAppointment = body.uriAudioAppointment;
+    let routingActive       = (body.routingActive === true ? body.routingActive : undefined);
+    let routingPhone        = (body.routingActive === true ? body.routingPhone : undefined);
 
-  // creating dynamic query string to map the Attribute values
-  let dbUpdateExpression = "set " +
-    (customerID           ? "customerID           = :cusId, "     : "") +
-    (customerType         ? "customerType         = :cusType, "   : "") +
-    (customerEmail        ? "customerEmail        = :cusEmail, "  : "") +
-    (customerMobile       ? "customerMobile       = :cusMobile, " : "") +
-    (uriAudioWelcome      ? "uriAudioWelcome      = :uriAudWel, " : "") +
-    (uriAudioAppointment  ? "uriAudioAppointment  = :uriAudApp, " : "") +
-    (routingActive        ? "routingActive        = :routAct, "   : "") +
-    (routingActive        ? "routingPhone         = :routPhn, "   : "") + "dateTimeUpdated = :dtU";
+    // object to map to the db attribute value
+    let dbAttributeValue = {
+      //":phNo"     : phoneNumber,
+      ":cusId"    : customerID,
+      ":cusType"  : customerType,
+      ":cusEmail" : customerEmail,
+      ":cusMobile": customerMobile,
+      ":uriAudWel": uriAudioWelcome,
+      ":uriAudApp": uriAudioAppointment,
+      ":routAct"  : routingActive,
+      ":routPhn"  : routingPhone,
+      ":dtU"      : moment().toISOString()
+    };
 
-  let payloads = {
-    TableName: "profile",
-    Key: {
-      "phoneNumber": phoneNumber
-    },
-    conditionExpession:"phoneNumber = :phNo",
-    UpdateExpression: dbUpdateExpression,
-    ExpressionAttributeValues: dbAttributeValue,
-    ReturnValues: "UPDATED_NEW"
-  };
-  //console.log(payloads);
-  dynamo.update(payloads, function(err, data) {
-    if (err) {
+    // creating dynamic query string to map the Attribute values
+    let dbUpdateExpression = "set " +
+      (customerID           ? "customerID           = :cusId, "     : "") +
+      (customerType         ? "customerType         = :cusType, "   : "") +
+      (customerEmail        ? "customerEmail        = :cusEmail, "  : "") +
+      (customerMobile       ? "customerMobile       = :cusMobile, " : "") +
+      (uriAudioWelcome      ? "uriAudioWelcome      = :uriAudWel, " : "") +
+      (uriAudioAppointment  ? "uriAudioAppointment  = :uriAudApp, " : "") +
+      (routingActive        ? "routingActive        = :routAct, "   : "") +
+      (routingActive        ? "routingPhone         = :routPhn, "   : "") + "dateTimeUpdated = :dtU";
 
-      console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
+    let payloads = {
+      TableName: "profile",
+      Key: {
+        "phoneNumber": phoneNumber
+      },
+      //conditionExpession:" phoneNumber = :phNo ",
+      UpdateExpression: dbUpdateExpression,
+      ExpressionAttributeValues: dbAttributeValue,
+      ReturnValues: "UPDATED_NEW"
+    };
+    //console.log(payloads);
+    dynamo.update(payloads, function(err, data) {
+      if (err) {
+
+        console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
+        var response = {
+          statusCode: 400,
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "message": err.message
+          })
+        };
+        callback(null, response);
+
+      } else {
+
+        var response = {
+          statusCode: 200,
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "message": "OK"
+          })
+        };
+        callback(null, response);
+
+      }
+
+    });
+
+  }).catch(function(){
+
       var response = {
-        statusCode: 400,
+        statusCode: 404,
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          "message": "Whoops Something Went Wrong !"
+          "message": "Phone number not found"
         })
       };
       callback(null, response);
 
-    } else {
-
-      var response = {
-        statusCode: 200,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          "message": "OK"
-        })
-      };
-      callback(null, response);
-
-    }
-
-  });
+  })
 
 }
 
-function isPhoneNumberExit(phoneNumber) {
-  var payloads        = {
-    TableName: "phoneNumber",
-    KeyConditionExpression: "phoneNumber = :phn",
-    ExpressionAttributeValues: {
-      ":phn": phoneNumber
-    }
+
+function isPhoneNumberExist (phoneNumber){
+
+  var params        = {
+                        TableName: "phoneNumber",
+                        KeyConditionExpression: "phoneNumber = :phn",
+                        ExpressionAttributeValues: {
+                            ":phn": phoneNumber
+                        }
   };
+
   return new Promise (function(resolve, reject){
+    dynamo.query(params, function(err, data) {
+        if (err) {
 
-    dynamo.query(payloads, function(err, data) {
-      console.log(data);
-      if (err) {
+            console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+            //res.status(400).json({code:400,message :err.message});
 
-        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
-        //res.status(400).json({code:400,message :err.message});
-
-      } else {
-        // if no records found then reject else resolve
-        if (data.Items.length === 0 ) {
-          reject();
-
-        } else {
-          resolve()
+          } else {
+              // if no records found then reject else resolve
+              if (data.Items.length === 0 ) {
+                reject();
+              } else {
+                resolve()
+              }
         }
-      }
 
     });
   })
 
-}
+};
