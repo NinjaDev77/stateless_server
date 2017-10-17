@@ -38,15 +38,30 @@ var twilioFrame       = require('../framework/twilio');
     router.delete('/audios/:phoneNumber/welcome',audioWelcomeCtrl.deleteWelcomeAudio);
 
     // endpoints doe notification
+    
+
     router.post('/notifications/voice/:phoneNumber',function(req,res,next){
       var phoneNumber = req.params.phoneNumber;
       var { toPhoneNumber } = req.body;
-      twilioFrame.twilioOutboundCalls(toPhoneNumber,'',function(err,call){
+      twilioFrame.twilioOutboundCalls("+919748832494",'',function(err,call){
         res.json(call.sid);
       })
+    });
+    
+    var twilio = require('twilio');
+    var VoiceResponse = twilio.twiml.VoiceResponse;
+    router.post('/outbound/:phoneNumber',function(req,res){
+      var toNumber =req.params.phoneNumber;
+       var twimlResponse = new VoiceResponse();
 
+       twimlResponse.say('Thanks for contacting our sales department. Our ' +
+                         'next available representative will take your call. ',
+                         { voice: 'alice' });
 
-    })
+       twimlResponse.dial(toNumber);
+
+       res.send(twimlResponse.toString());
+    });
     return router;
 
     function authenticate (req,res,next){
