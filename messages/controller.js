@@ -11,508 +11,645 @@ const dynamo = new AWS.DynamoDB.DocumentClient();
 // function to check the existence of the provided phone number 
 function isPhoneNumberExist(phoneNumber){
 
-  var payloads = {
-    TableName: "phoneNumber",
-    KeyConditionExpression: "phoneNumber = :phn",
-    ExpressionAttributeValues: {
-      ":phn": phoneNumber
-    }
-  };
-  
-  return new Promise (function(resolve, reject){
-
-    dynamo.query(payloads, function(err, data) {
-
-      if (err) {
-        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
-        //res.status(400).json({code:400,message :err.message});
-      } else {
-        // if no records found then reject else resolve
-        if (data.Items.length === 0 ) {
-
-          reject();
-        } else {
-          resolve()
+    var payloads = {
+        TableName: "phoneNumber",
+        KeyConditionExpression: "phoneNumber = :phn",
+        ExpressionAttributeValues: {
+            ":phn": phoneNumber
         }
-      }
+    };
 
-    });
+    return new Promise (function(resolve, reject){
 
-  })
+        dynamo.query(payloads, function(err, data) {
+
+            if (err) {
+                console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+                //res.status(400).json({code:400,message :err.message});
+            } else {
+                // if no records found then reject else resolve
+                if (data.Items.length === 0 ) {
+
+                    reject();
+                } else {
+                    resolve()
+                }
+            }
+
+        });
+
+    })
 
 }
 
 // function to check the existence of the provided phone number and id property 
 function isIdPropertyExist(phoneNumber, idProperty){
 
-  var payloads = {
-    TableName: "property",
-    KeyConditionExpression: "phoneNumber = :phn AND idProperty = :id",
-    ExpressionAttributeValues: {
-      ":phn": phoneNumber,
-      ":id": idProperty
-    }
-  };
-
-  return new Promise (function(resolve, reject){
-
-    dynamo.query(payloads, function(err, data) {
-
-      if (err) {
-        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
-        //res.status(400).json({code:400,message :err.message});
-      } else {
-        // if no records found then reject else resolve
-        if (data.Items.length === 0 ) {
-          reject();
-        } else {
-          resolve()
+    var payloads = {
+        TableName: "property",
+        KeyConditionExpression: "phoneNumber = :phn AND idProperty = :id",
+        ExpressionAttributeValues: {
+            ":phn": phoneNumber,
+            ":id": idProperty
         }
-      }
+    };
 
-    });
+    return new Promise (function(resolve, reject){
 
-  })
+        dynamo.query(payloads, function(err, data) {
+
+            if (err) {
+                console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+                //res.status(400).json({code:400,message :err.message});
+            } else {
+                // if no records found then reject else resolve
+                if (data.Items.length === 0 ) {
+                    reject();
+                } else {
+                    resolve()
+                }
+            }
+
+        });
+
+    })
 
 }
 
 // function to get messages from number ( consumer customer )
-module.exports.getConsumerMessage = function(event, context, callback){
-  
-  var phoneNumber = event.pathParameters.phoneNumber;
+module.exports.getConsumerMessage = function(event, context, callback) {
 
-  var payload = {
-    TableName: "messages",
-    KeyConditionExpression: "phoneNumber = :phn",
-    ExpressionAttributeValues: {
-      ":phn": phoneNumber
-    }
-  };
-  
-  // function to get appointment in dynamodb with the above params
-  dynamo.query(payload, function(err, data) {
-    
-    if (err) {
+    var phoneNumber = event.pathParameters.phoneNumber;
 
-      console.error(err);
-      var response = {
-        statusCode: 400,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          "message": "Error in getting message"
-        })
-      };
-      callback(null, response);
+    var payload = {
+        TableName: "messages",
+        KeyConditionExpression: "phoneNumber = :phn",
+        ExpressionAttributeValues: {
+            ":phn": phoneNumber
+        }
+    };
 
-    } else {
+    // function to get appointment in dynamo db with the above params
+    dynamo.query(payload, function(err, data) {
 
-      if (data.Items.length === 0) {
+        if (err) {
 
-        var response = {
-          statusCode: 200,
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "message": "No message was found !"
-          })
-        };
-        callback(null, response);
+            console.error(err);
+            var response = {
+                statusCode: 400,
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "message": "Error in getting message!"
+                })
+            };
+            callback(null, response);
 
-      } else {
+        } else {
 
-        var response = {
-          statusCode: 200,
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "message": "OK",
-            "data": data.Items
-          })
-        };
-        callback(null, response);
+            if (data.Items.length === 0) {
 
-      }
+                var response = {
+                    statusCode: 200,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "message": "No message was found!"
+                    })
+                };
+                callback(null, response);
 
-    }
+            } else {
 
-  });
+                var response = {
+                    statusCode: 200,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "message": "OK",
+                        "data": data.Items
+                    })
+                };
+                callback(null, response);
+
+            }
+
+        }
+
+    });
 
 };
 
 // function to get messages from number ( business customer )
-module.exports.getBusinessMessage = function(event, context, callback){
-  
-  var phoneNumber = event.pathParameters.phoneNumber;
-  var idPropertyCustomer  = event.pathParameters.idProperty;
+module.exports.getBusinessMessage = function(event, context, callback) {
 
-  var payload = {
-    TableName: "messages",
-    KeyConditionExpression: "phoneNumber = :phn AND idPropertyCustomer = :id",
-    ExpressionAttributeValues: {
-      ":phn": phoneNumber,
-      ":id": idPropertyCustomer
-    }
-  };
+    var phoneNumber = event.pathParameters.phoneNumber;
+    var idPropertyCustomer  = event.pathParameters.idProperty;
 
-  // function to get appointment in dynamodb with the above params
-  dynamo.query(payload, function(err, data) {
-    
-    if (err) {
-
-      console.error(err);
-      var response = {
-        statusCode: 400,
-        headers: {
-          "Content-Type": "application/json"
+    var payload = {
+        TableName: 'messages',
+        Select: 'ALL_ATTRIBUTES',
+        ReturnConsumedCapacity: 'TOTAL',
+        FilterExpression: '#phoneNumber = :phoneNumber and #idPropertyCustomer = :idPropertyCustomer' ,
+        ExpressionAttributeNames: {
+            '#phoneNumber': 'phoneNumber',
+            '#idPropertyCustomer' : 'idPropertyCustomer'
         },
-        body: JSON.stringify({
-          "message": "Error in getting message"
-        })
-      };
-      callback(null, response);
+        ExpressionAttributeValues: {
+            ':phoneNumber': phoneNumber,
+            ':idPropertyCustomer': idPropertyCustomer
+        }
+    };
 
-    } else {
+    // function to get appointment in dynamodb with the above params
+    dynamo.scan(payload, function(err, data) {
 
-      if (data.Items.length === 0) {
+        if (err) {
 
-        var response = {
-          statusCode: 200,
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "message": "No message was found !"
-          })
-        };
-        callback(null, response);
+            console.error(err);
+            var response = {
+                statusCode: 400,
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "message": "Error in getting message"
+                })
+            };
+            callback(null, response);
 
-      } else {
+        } else {
 
-        var response = {
-          statusCode: 200,
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "message": "OK",
-            "data": data.Items
-          })
-        };
-        callback(null, response);
+            if (data.Items.length === 0) {
 
-      }
+                var response = {
+                    statusCode: 200,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "message": "No message was found!"
+                    })
+                };
+                callback(null, response);
 
-    }
+            } else {
 
-  });
+                var response = {
+                    statusCode: 200,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "message": "OK",
+                        "data": data.Items
+                    })
+                };
+                callback(null, response);
+
+            }
+
+        }
+
+    });
 
 };
 
 // function to store messages from number ( consumer customer )
-module.exports.storeConsumerMessage = function(event, context, callback){
+module.exports.storeConsumerMessage = function(event, context, callback) {
 
-  var body = JSON.parse(event.body);
-  var phoneNumber = event.pathParameters.phoneNumber;
-  var ifNumbervalid = isE164PhoneNumber('+' + phoneNumber);
+    var body = JSON.parse(event.body);
+    var phoneNumber = event.pathParameters.phoneNumber;
+    var messageId = uuid();
+    var createdAt = moment().toISOString();
 
-  if (!ifNumbervalid) {
+    var ifNumbervalid = isE164PhoneNumber('+' + phoneNumber);
 
-    var response = {
-      statusCode: 400,
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        "message": "Phone number is not in E164 format"
-      })
-    };
+    if (!ifNumbervalid) {
 
-    callback(null, response);
-
-  } else {
-
-    // isPhoneNumberExist(phoneNumber).then(function(){
-
-      
-      var urlRecording = body.urlRecording;
-
-      if (urlRecording === null || urlRecording === undefined){ 
-        
         var response = {
-          statusCode: 400,
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "message": "Mandator Field is missing !"
-          })
+            statusCode: 400,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "message": "Phone number is not in E164 format"
+            })
         };
+
         callback(null, response);
 
-      } else {
+    } else {
 
-        var payload = {
-          TableName: 'messages',
-          Item: { // a map of attribute name to AttributeValue
-            "phoneNumber": phoneNumber,
-            "urlRecording": urlRecording
-          },
-          ReturnValues: 'NONE', // optional (NONE | ALL_OLD)
-          ReturnConsumedCapacity: 'NONE', // optional (NONE | TOTAL | INDEXES)
-          ReturnItemCollectionMetrics: 'NONE', // optional (NONE | SIZE)
-        };
-        
-        //method to put into the dynamodb
-        dynamo.put(payload, function(err, data) {
-          if (err) {
+        // isPhoneNumberExist(phoneNumber).then(function(){
 
-            console.error(err); // an error occurred
+        var urlRecording = body.urlRecording;
+
+        if ( urlRecording === null || urlRecording === undefined || createdAt === null || createdAt === undefined ){
+
             var response = {
-              statusCode: 400,
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                "message": "Error in creating message"
-              })
+                statusCode: 400,
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "message": "Mandatory Field is missing !"
+                })
             };
             callback(null, response);
 
-          } else {
+        } else {
 
-            var response = {
-              statusCode: 200,
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                "message": "OK"
-              })
+            var payload = {
+                TableName: 'messages',
+                Item: { // a map of attribute name to AttributeValue
+                    "phoneNumber": phoneNumber,
+                    "messageId": messageId,
+                    "urlRecording": urlRecording,
+                    "createdAt": createdAt
+                },
+                ReturnValues: 'NONE', // optional (NONE | ALL_OLD)
+                ReturnConsumedCapacity: 'NONE', // optional (NONE | TOTAL | INDEXES)
+                ReturnItemCollectionMetrics: 'NONE' // optional (NONE | SIZE)
             };
-            callback(null, response);
 
-          }
-        });
+            //method to put into the dynamodb
+            dynamo.put(payload, function(err, data) {
+                if (err) {
 
-      }
+                    console.error(err); // an error occurred
+                    var response = {
+                        statusCode: 400,
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            "message": "Error in creating message!"
+                        })
+                    };
+                    callback(null, response);
 
-    // }).catch(function(){
-    //   var response = {
-    //     statusCode: 400,
-    //     headers: {
-    //       "Content-Type": "application/json"
-    //     },
-    //     body: JSON.stringify({
-    //       "message": "Phone number not found !"
-    //     })
-    //   };
-    //   callback(null, response);
-    // })
+                } else {
 
-  }
+                    var response = {
+                        statusCode: 200,
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            "message": "OK"
+                        })
+                    };
+                    callback(null, response);
 
-}
+                }
+            });
+
+        }
+
+        // }).catch(function(){
+        //   var response = {
+        //     statusCode: 400,
+        //     headers: {
+        //       "Content-Type": "application/json"
+        //     },
+        //     body: JSON.stringify({
+        //       "message": "Phone number not found !"
+        //     })
+        //   };
+        //   callback(null, response);
+        // })
+
+    }
+
+};
 
 // function to store messages from number ( business customer )
-module.exports.storeBusinessMessage = function(event, context, callback){
+module.exports.storeBusinessMessage = function(event, context, callback) {
 
-  var body = JSON.parse(event.body);
-  var phoneNumber = event.pathParameters.phoneNumber;
-  var idPropertyCustomer = event.pathParameters.idProperty;
+    var body = JSON.parse(event.body);
+    var phoneNumber = event.pathParameters.phoneNumber;
+    var messageId = uuid();
+    var createdAt = moment().toISOString();
+    var idPropertyCustomer = event.pathParameters.idProperty;
 
-  var ifNumbervalid = isE164PhoneNumber('+' + phoneNumber)
-  if (!ifNumbervalid) {
+    var ifNumbervalid = isE164PhoneNumber('+' + phoneNumber)
+    if (!ifNumbervalid) {
 
-    var response = {
-      statusCode: 400,
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        "message": "Phone number is not in E164 format"
-      })
-    };
-
-    callback(null, response);
-
-  } else {
-
-    // isIdPropertyExist(phoneNumber, idProperty).then(function(){
-
-      var urlRecording = body.urlRecording;
-
-      if (urlRecording === null || urlRecording === undefined){
-        
         var response = {
-          statusCode: 400,
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "message": "Mandator Field is missing !"
-          })
+            statusCode: 400,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "message": "Phone number is not in E164 format"
+            })
         };
+
         callback(null, response);
 
-      } else {
+    } else {
 
-        var payload = {
-          TableName: 'messages',
-          Item: { // a map of attribute name to AttributeValue
-            "phoneNumber": phoneNumber,
-            "idPropertyCustomer": idPropertyCustomer,
-            "urlRecording": urlRecording
-          },
-          ReturnValues: 'NONE', // optional (NONE | ALL_OLD)
-          ReturnConsumedCapacity: 'NONE', // optional (NONE | TOTAL | INDEXES)
-          ReturnItemCollectionMetrics: 'NONE', // optional (NONE | SIZE)
-        };
+        // isIdPropertyExist(phoneNumber, idProperty).then(function(){
 
-        //method to put into the dynamodb
-        dynamo.put(payload, function(err, data) {
-          
-          if (err) {
+        var urlRecording = body.urlRecording;
 
-            console.error(err); // an error occurred
+        if (urlRecording === null || urlRecording === undefined || createdAt === null || createdAt === undefined ){
+
             var response = {
-              statusCode: 400,
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                "message": "Error in creating message"
-              })
+                statusCode: 400,
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "message": "Mandatory Field is missing !"
+                })
             };
             callback(null, response);
 
-          } else {
+        } else {
 
-            var response = {
-              statusCode: 200,
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                "message": "OK"
-              })
+            var payload = {
+                TableName: 'messages',
+                Item: { // a map of attribute name to AttributeValue
+                    "phoneNumber": phoneNumber,
+                    "messageId": messageId,
+                    "idPropertyCustomer": idPropertyCustomer,
+                    "urlRecording": urlRecording,
+                    "createdAt": createdAt
+                },
+                ReturnValues: 'NONE', // optional (NONE | ALL_OLD)
+                ReturnConsumedCapacity: 'NONE', // optional (NONE | TOTAL | INDEXES)
+                ReturnItemCollectionMetrics: 'NONE' // optional (NONE | SIZE)
             };
-            callback(null, response);
 
-          }
+            //method to put into the dynamodb
+            dynamo.put(payload, function(err, data) {
 
-        });
+                if (err) {
 
-      }
+                    console.error(err); // an error occurred
+                    var response = {
+                        statusCode: 400,
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            "message": "Error in creating message"
+                        })
+                    };
+                    callback(null, response);
 
-    // }).catch(function(){
-    //   var response = {
-    //     statusCode: 400,
-    //     headers: {
-    //       "Content-Type": "application/json"
-    //     },
-    //     body: JSON.stringify({
-    //       "message": "Phone number not found !"
-    //     })
-    //   };
-    //   callback(null, response);
-    // })
+                } else {
 
-  }
+                    var response = {
+                        statusCode: 200,
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            "message": "OK"
+                        })
+                    };
+                    callback(null, response);
 
-}
+                }
+
+            });
+
+        }
+
+        // }).catch(function(){
+        //   var response = {
+        //     statusCode: 400,
+        //     headers: {
+        //       "Content-Type": "application/json"
+        //     },
+        //     body: JSON.stringify({
+        //       "message": "Phone number not found !"
+        //     })
+        //   };
+        //   callback(null, response);
+        // })
+
+    }
+
+};
 
 // function to delete messages from number ( consumer customer )
 module.exports.deleteConsumerMessage = function(event, context, callback) {
 
-  var phoneNumber = event.pathParameters.phoneNumber;
-  var payloads = {
-    TableName: "messages",
-    Key: {
-      "phoneNumber": phoneNumber
-    }
-  }
-  // function to delete profile in dynamodb
-  dynamo.delete(payloads, function(err, data) {
-    if (err) {
+    var phoneNumber = event.pathParameters.phoneNumber;
 
-      console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
-      var response = {
-        statusCode: 400,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          "message": "Error in deleting message"
-        })
-      };
-      callback(null, response);
+    var getPayload = {
+        TableName: "messages",
+        KeyConditionExpression: "phoneNumber = :phn",
+        ExpressionAttributeValues: {
+            ":phn": phoneNumber
+        }
+    };
 
-    } else {
+    // function to get appointment in dynamo db with the above params
+    dynamo.query(getPayload, function(err, data) {
 
-      var response = {
-        statusCode: 200,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          "message": "OK"
-        })
-      };
-      callback(null, response);
+        if (err) {
 
+            console.error(err);
+            var response = {
+                statusCode: 400,
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "message": "Error in getting message!"
+                })
+            };
+            callback(null, response);
 
-    }
+        } else {
 
-  });
-}
+            if (data.Items.length === 0) {
+
+                var response = {
+                    statusCode: 200,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "message": "No message was found!"
+                    })
+                };
+                callback(null, response);
+
+            } else {
+
+                var getResponse = data.Items;
+                var delCount = 0;
+
+                for( let i = 0; i < getResponse.length; i++ ) {
+                    let deletePayload = {
+                        TableName: "messages",
+                        Key: {
+                            "phoneNumber": phoneNumber,
+                            "messageId": getResponse[i].messageId
+                        }
+                    };
+
+                    // function to delete profile in dynamo db
+                    dynamo.delete(deletePayload, function(err, data) {
+                        if (err) {
+
+                            console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
+                            var response = {
+                                statusCode: 400,
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                    "message": "Error in deleting message"
+                                })
+                            };
+
+                        } else {
+                            delCount++;
+                            if(delCount == getResponse.length) {
+
+                                var response = {
+                                    statusCode: 200,
+                                    headers: {
+                                        "Content-Type": "application/json"
+                                    },
+                                    body: JSON.stringify({
+                                        "message": "OK"
+                                    })
+                                };
+                                callback(null, response);
+
+                            }
+                            console.log(delCount);
+                        }
+                    });
+                }
+
+            }
+
+        }
+
+    });
+
+};
 
 // function to delete messages from number ( business customer )
 module.exports.deleteBusinessMessage = function(event, context, callback) {
 
-  var phoneNumber = event.pathParameters.phoneNumber;
-  var idPropertyCustomer = event.pathParameters.idProperty;
-  var payloads = {
-    TableName: "messages",
-    Key: {
-      "phoneNumber": phoneNumber,
-      "idPropertyCustomer": idPropertyCustomer
-    }
-  }
-  // function to delete profile in dynamodb
-  dynamo.delete(payloads, function(err, data) {
-    if (err) {
+    var phoneNumber = event.pathParameters.phoneNumber;
+    var idPropertyCustomer = event.pathParameters.idProperty;
 
-      console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
-      var response = {
-        statusCode: 400,
-        headers: {
-          "Content-Type": "application/json"
+
+    var getPayload = {
+        TableName: 'messages',
+        Select: 'ALL_ATTRIBUTES',
+        ReturnConsumedCapacity: 'TOTAL',
+        FilterExpression: '#phoneNumber = :phoneNumber and #idPropertyCustomer = :idPropertyCustomer' ,
+        ExpressionAttributeNames: {
+            '#phoneNumber': 'phoneNumber',
+            '#idPropertyCustomer' : 'idPropertyCustomer'
         },
-        body: JSON.stringify({
-          "message": "Error in deleting message"
-        })
-      };
-      callback(null, response);
+        ExpressionAttributeValues: {
+            ':phoneNumber': phoneNumber,
+            ':idPropertyCustomer': idPropertyCustomer
+        }
+    };
 
-    } else {
+    // function to get appointment in dynamo db with the above params
+    dynamo.scan(getPayload, function(err, data) {
 
-      var response = {
-        statusCode: 200,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          "message": "OK"
-        })
-      };
-      callback(null, response);
+        if (err) {
 
+            console.error(err);
+            var response = {
+                statusCode: 400,
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "message": "Error in getting message!"
+                })
+            };
+            callback(null, response);
 
-    }
+        } else {
 
-  });
-}
+            if (data.Items.length === 0) {
+
+                var response = {
+                    statusCode: 200,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "message": "No message was found!"
+                    })
+                };
+                callback(null, response);
+
+            } else {
+
+                var getResponse = data.Items;
+                var delCount = 0;
+
+                for( let i = 0; i < getResponse.length; i++ ) {
+                    let deletePayload = {
+                        TableName: "messages",
+                        Key: {
+                            "phoneNumber": phoneNumber,
+                            "messageId": getResponse[i].messageId
+                        }
+                    };
+
+                    // function to delete profile in dynamo db
+                    dynamo.delete(deletePayload, function(err, data) {
+                        if (err) {
+
+                            console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
+                            var response = {
+                                statusCode: 400,
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                    "message": "Error in deleting message"
+                                })
+                            };
+
+                        } else {
+                            delCount++;
+                            if(delCount == getResponse.length) {
+
+                                var response = {
+                                    statusCode: 200,
+                                    headers: {
+                                        "Content-Type": "application/json"
+                                    },
+                                    body: JSON.stringify({
+                                        "message": "OK"
+                                    })
+                                };
+                                callback(null, response);
+
+                            }
+                            console.log(delCount);
+                        }
+                    });
+                }
+
+            }
+
+        }
+
+    });
+
+};

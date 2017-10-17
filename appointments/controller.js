@@ -151,7 +151,6 @@ module.exports.getBusinessAppointment = function(event, context, callback) {
 
   var payload = {
         TableName: 'appointments',
-        Limit: 100,
         Select: 'ALL_ATTRIBUTES',
         ReturnConsumedCapacity: 'TOTAL',
         FilterExpression: '#phoneNumber = :phoneNumber and #idProperty = :idProperty' ,
@@ -160,15 +159,20 @@ module.exports.getBusinessAppointment = function(event, context, callback) {
             '#idProperty' : 'idProperty'
         },
         ExpressionAttributeValues: {
-            ':phoneNumber': {
-                'S': phoneNumber
-
-            },
-            ":idProperty":{
-                'S' : idProperty
-            }
-        },
+            ':phoneNumber': phoneNumber,
+            ':idProperty': idProperty
+        }
     };
+
+    // var payload = {
+    //     TableName: "appointments",
+    //     KeyConditionExpression: "phoneNumber = :phn AND appointmentId = :appId AND idProperty = :id",
+    //     ExpressionAttributeValues: {
+    //         ":phn": phoneNumber,
+    //         ":appId": 'undefined',
+    //         ":id": idProperty
+    //     }
+    // };
 
   // function to get appointment in dynamodb with the above params
   dynamo.scan(payload, function(err, data) {
