@@ -1,0 +1,14 @@
+{
+  "name": "twimlcreation",
+  "version": "1.0.0",
+  "description": "appointments crud",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jon Vaughn",
+  "license": "ISC",
+  "dependencies": {
+    "twilio": "~3.0.0-rc.16"
+  }
+}
