@@ -8,8 +8,10 @@ exports.handler = (event, context, callback) => {
   let twimlResponse = new voiceResponse();
 
   twimlResponse.say('Please wait while we are connecting',{ voice: 'woman' });
+
   twimlResponse.dial(phoneNumber);
 
+  //console.log(twimlResponse.toString());
   let response = {
     statusCode: 200,
     headers: {
@@ -17,7 +19,7 @@ exports.handler = (event, context, callback) => {
     },
     body: twimlResponse.toString()
   };
-
   callback(null, response)
-  
+
+
 };
