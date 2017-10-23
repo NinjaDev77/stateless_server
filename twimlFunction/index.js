@@ -4,7 +4,7 @@ const voiceResponse = twilio.twiml.VoiceResponse;
 exports.handler = (event, context, callback) => {
 
   let req           = event;
-  let phoneNumber   = req.pathParameters.phonenumber.toString();
+  let phoneNumber   = (req.pathParameters.phonenumber.toString().charAt(0) === "+") ? (req.pathParameters.phonenumber.toString()) : ("+" + req.pathParameters.phonenumber.toString());
   let twimlResponse = new voiceResponse();
 
   twimlResponse.say('Please wait while we are connecting',{ voice: 'woman' });

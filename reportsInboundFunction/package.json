@@ -1,7 +1,7 @@
 {
-  "name": "twilioCall",
+  "name": "reportsInboundFunction",
   "version": "1.0.0",
-  "description": "a outbound call to the number",
+  "description": "Get number of calls",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,9 +9,9 @@
   "author": "Jon Vaughn",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.138.0",
-    "moment": "^2.19.1",
-    "twilio": "~3.0.0-rc.16",
+    "aws-sdk": "^2.126.0",
+    "is-e164-phone-number": "^1.0.0",
+    "moment": "^2.18.1",
     "uuid": "^3.1.0"
   }
 }
