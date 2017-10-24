@@ -7,6 +7,8 @@ var s3 = new AWS.S3({
 const moment = require('moment');
 const uuid = require('uuid/v4');
 
+const bucketName = process.env.bucketName ;
+
 exports.handler = function(event, context, callback) {
   switch (event.httpMethod) {
 
@@ -57,7 +59,7 @@ function s3Upload(event, context, callback) {
   let fileName = uuid();
 
   let params = {
-    Bucket: 'audiostorebucket/appointment',
+    Bucket: bucketName,
     Key: fileName + '.' + audioFileExt,
     Body: audioFile
   }
@@ -213,7 +215,7 @@ function deleteAppointmentAudio(event,context,callback) {
           // getting the file name from a url
           var file = uriAudioAppointment.split('/')[4];
           var params = {
-            Bucket: "audiostorebucket/appointment",
+            Bucket: bucketName,
             Key: file
           };
 

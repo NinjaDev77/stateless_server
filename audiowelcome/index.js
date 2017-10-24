@@ -6,6 +6,7 @@ var s3 = new AWS.S3({
 });
 const moment = require('moment');
 const uuid = require('uuid/v4');
+const bucketName = process.env.bucketName;
 
 exports.handler = function(event, context, callback) {
   switch (event.httpMethod) {
@@ -61,12 +62,12 @@ function s3Upload(event, context, callback) {
     return callback(null,{statusCode : 400 , message : " audioFile params is missing !"});
 
   } else {
-    
+
     let audioFile = new Buffer(audioFileInBase64, 'base64');
     let fileName = uuid();
 
     let params = {
-      Bucket: 'audiostorebucket/welcome',
+      Bucket: bucketName,
       Key: fileName + '.' + audioFileExt,
       Body: audioFile
     }
@@ -228,7 +229,7 @@ function deleteWelcomeAudio(event,context,callback) {
           // getting the file name from a url
           var file = uriAudioWelcome.split('/')[4];
           var params = {
-            Bucket: "audiostorebucket/welcome",
+            Bucket: bucketName,
             Key: file
           };
 
