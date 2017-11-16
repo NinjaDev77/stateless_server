@@ -255,8 +255,23 @@ module.exports.updateProfile = function(event, context, callback) {
     let customerMobile      = body.customerMobile;
     let uriAudioWelcome     = body.uriAudioWelcome;
     let uriAudioAppointment = body.uriAudioAppointment;
-    let routingActive       = (body.routingActive === true ? body.routingActive : undefined);
+    let routingActive       = body.routingActive;
     let routingPhone        = (body.routingActive === true ? body.routingPhone : undefined);
+    if (routingActive) {
+      if (body.routingPhone === undefined) {
+        var response = {
+          statusCode: 400,
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "message":"routingPhone is mandatory field"
+          })
+        };
+         return callback(null, response);
+
+      }
+    }
 
     // object to map to the db attribute value
     let dbAttributeValue = {
@@ -280,7 +295,7 @@ module.exports.updateProfile = function(event, context, callback) {
       (customerMobile       ? "customerMobile       = :cusMobile, " : "") +
       (uriAudioWelcome      ? "uriAudioWelcome      = :uriAudWel, " : "") +
       (uriAudioAppointment  ? "uriAudioAppointment  = :uriAudApp, " : "") +
-      (routingActive        ? "routingActive        = :routAct, "   : "") +
+      (routingActive !== undefined       ? "routingActive        = :routAct, "   : "") +
       (routingActive        ? "routingPhone         = :routPhn, "   : "") + "dateTimeUpdated = :dtU";
 
     let payloads = {
